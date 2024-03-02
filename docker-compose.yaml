@@ -1,0 +1,11 @@
+version: '3.9'
+
+services:
+  mindflow:
+    container_name: mindflow
+    build: .
+    image: mindflow-b
+    env_file:
+      - ./.env
+    ports:
+      - 8080:8080
