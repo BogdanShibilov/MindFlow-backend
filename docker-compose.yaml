@@ -9,3 +9,15 @@ services:
       - ./.env
     ports:
       - 8080:8080
+  
+  postgres:
+    container_name: mindflow-pg
+    image: postgres:16.2
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=mindflow
+    volumes:
+      - ./docker/mindflow-pg:var/lib/postgresql/data:rw
+    ports:
+      - "5432:5432"
