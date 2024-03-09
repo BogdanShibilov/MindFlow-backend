@@ -1,7 +1,7 @@
 package entity
 
 type User struct {
-	Guid     string
+	Uuid     string
 	Email    string
 	PassHash []byte
 }

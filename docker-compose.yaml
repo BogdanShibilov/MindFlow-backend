@@ -18,6 +18,6 @@ services:
       - POSTGRES_PASSWORD=root
       - POSTGRES_DB=mindflow
     volumes:
-      - ./docker/mindflow-pg:var/lib/postgresql/data:rw
+      - ./docker-data/mindflow-pg:/var/lib/postgresql/data:rw
     ports:
       - "5432:5432"

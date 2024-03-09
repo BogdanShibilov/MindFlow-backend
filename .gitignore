@@ -4,6 +4,7 @@
 
 # Config
 .env
+config/*.yaml
 
 # Binaries for programs and plugins
 *.exe

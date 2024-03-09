@@ -5,7 +5,7 @@ tasks:
     cmd: goimports -local "github.com/bogdanshibilov/mindflowbackend" -w ./internal ./cmd
   
   lint:
-    cmd: golangci-lint run --fix
+    cmd: golangci-lint run ./cmd/... ./internal/... --fix
 
   push-to-gar:
     cmds:
@@ -13,3 +13,9 @@ tasks:
       - docker buildx build -t mindflow-b --platform linux/amd64 .
       - docker tag mindflow-b europe-north1-docker.pkg.dev/mindflow-416115/mindflow-b/mindflow-b
       - docker push europe-north1-docker.pkg.dev/mindflow-416115/mindflow-b/mindflow-b
+
+  migrate-up:
+    cmd: go run ./cmd/migrator/main.go --conn-url=postgres://root:root@localhost:5432/mindflow --migrations-path="./migrations" --way=up
+  
+  migrate-down:
+    cmd: go run ./cmd/migrator/main.go --conn-url=postgres://root:root@localhost:5432/mindflow --migrations-path="./migrations" --way=down

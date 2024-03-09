@@ -3,7 +3,6 @@ package postgres
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -15,7 +14,7 @@ type Storage struct {
 func New(connString string) (*Storage, error) {
 	const op = "storage.postgres.New"
 
-	conn, err := pgx.Connect(context.Background(), os.Getenv("DB_URL"))
+	conn, err := pgx.Connect(context.Background(), connString)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
