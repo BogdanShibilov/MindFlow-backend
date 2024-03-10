@@ -11,8 +11,9 @@ import (
 type Auth struct {
 	log          *slog.Logger
 	userSaver    UserSaver
-	UserProvider UserProvider
+	userProvider UserProvider
 	tokenTTL     time.Duration
+	secret       string
 }
 
 type UserSaver interface {
@@ -32,11 +33,13 @@ func New(
 	userSaver UserSaver,
 	userProvider UserProvider,
 	tokenTTL time.Duration,
+	secret string,
 ) *Auth {
 	return &Auth{
 		log:          log,
 		userSaver:    userSaver,
-		UserProvider: userProvider,
+		userProvider: userProvider,
 		tokenTTL:     tokenTTL,
+		secret:       secret,
 	}
 }
