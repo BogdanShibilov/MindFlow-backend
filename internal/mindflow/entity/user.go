@@ -1,7 +1,9 @@
 package entity
 
+import "github.com/google/uuid"
+
 type User struct {
-	Uuid     string
+	Uuid     uuid.UUID
 	Email    string
 	PassHash []byte
 }

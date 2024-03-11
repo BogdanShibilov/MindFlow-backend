@@ -8,7 +8,7 @@ import (
 	"github.com/bogdanshibilov/mindflowbackend/internal/mindflow/entity"
 )
 
-func NewAccessToken(user entity.User, secret string, duration time.Duration) (string, error) {
+func NewAccessToken(user *entity.User, secret string, duration time.Duration) (string, error) {
 	token := jwt.New(jwt.SigningMethodHS256)
 
 	claims := token.Claims.(jwt.MapClaims)

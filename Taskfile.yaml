@@ -1,6 +1,9 @@
 version: '3'
 
 tasks:
+  docker-build:
+    cmd: docker buildx build -t mindflow-b:latest --platform linux/amd64 .
+
   goimports:
     cmd: goimports -local "github.com/bogdanshibilov/mindflowbackend" -w ./internal ./cmd
   
@@ -9,10 +12,8 @@ tasks:
 
   push-to-gar:
     cmds:
-      - docker rmi europe-north1-docker.pkg.dev/mindflow-416115/mindflow-b/mindflow-b
-      - docker buildx build -t mindflow-b --platform linux/amd64 .
-      - docker tag mindflow-b europe-north1-docker.pkg.dev/mindflow-416115/mindflow-b/mindflow-b
-      - docker push europe-north1-docker.pkg.dev/mindflow-416115/mindflow-b/mindflow-b
+      - docker tag mindflow-b:latest europe-north1-docker.pkg.dev/mindflow-416115/mindflow-b/mindflow-b:latest
+      - docker push europe-north1-docker.pkg.dev/mindflow-416115/mindflow-b/mindflow-b:latest
 
   migrate-up:
     cmd: go run ./cmd/migrator/main.go --conn-url=postgres://root:root@localhost:5432/mindflow --migrations-path="./migrations" --way=up

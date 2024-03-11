@@ -11,12 +11,18 @@ import (
 type Config struct {
 	Env        string `yaml:"env" env-required:"true"`
 	HTTPServer `yaml:"http_server"`
+	Jwt        `yaml:"jwt"`
 }
 
 type HTTPServer struct {
 	Port        string        `yaml:"port" env-default:"8080"`
 	Timeout     time.Duration `yaml:"timeout" env-default:"4s"`
 	IdleTimeout time.Duration `yaml:"idle_timeout" env-default:"60s"`
+}
+
+type Jwt struct {
+	TokenTTL time.Duration `yaml:"token_ttl" env-default:"3600s"`
+	Secret   string        `yaml:"secret" env-required:"true"`
 }
 
 func MustLoad() *Config {

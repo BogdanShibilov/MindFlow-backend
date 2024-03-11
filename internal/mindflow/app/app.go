@@ -8,6 +8,8 @@ import (
 
 	"github.com/bogdanshibilov/mindflowbackend/internal/mindflow/config"
 	router "github.com/bogdanshibilov/mindflowbackend/internal/mindflow/controller"
+	"github.com/bogdanshibilov/mindflowbackend/internal/mindflow/services/auth"
+	"github.com/bogdanshibilov/mindflowbackend/internal/mindflow/storage/postgres"
 	"github.com/bogdanshibilov/mindflowbackend/internal/pkg/httpserver"
 
 	"github.com/gin-gonic/gin"
@@ -28,8 +30,26 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 func (a *App) Run() {
 	const op = "app.Run"
 
+	pgDb, err := postgres.New(os.Getenv("PG_CONN_URL"))
+	if err != nil {
+		panic(op + " " + err.Error())
+	}
+	defer func() {
+		err := pgDb.Close()
+		if err != nil {
+			a.log.Error(op, err)
+		}
+	}()
+
+	auth := auth.New(
+		pgDb,
+		pgDb,
+		a.cfg.TokenTTL,
+		a.cfg.Secret,
+	)
+
 	handler := gin.New()
-	router.New(handler)
+	router.New(handler, a.log, auth)
 	httpserver := httpserver.New(
 		handler,
 		httpserver.Port(a.cfg.Port),
