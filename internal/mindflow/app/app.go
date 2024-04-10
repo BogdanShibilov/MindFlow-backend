@@ -9,6 +9,7 @@ import (
 	"github.com/bogdanshibilov/mindflowbackend/internal/mindflow/config"
 	router "github.com/bogdanshibilov/mindflowbackend/internal/mindflow/controller"
 	"github.com/bogdanshibilov/mindflowbackend/internal/mindflow/services/auth"
+	"github.com/bogdanshibilov/mindflowbackend/internal/mindflow/services/expert"
 	"github.com/bogdanshibilov/mindflowbackend/internal/mindflow/storage/postgres"
 	"github.com/bogdanshibilov/mindflowbackend/internal/pkg/httpserver"
 
@@ -48,8 +49,10 @@ func (a *App) Run() {
 		a.cfg.Secret,
 	)
 
+	experts := expert.New(pgDb, pgDb)
+
 	handler := gin.New()
-	router.New(handler, a.log, auth)
+	router.New(handler, a.log, auth, experts)
 	httpserver := httpserver.New(
 		handler,
 		httpserver.Port(a.cfg.Port),

@@ -13,6 +13,5 @@ type ExpertInfo struct {
 	ExperienceDescription  string
 	ExpertiseAtDescription string
 	SubmittedAt            time.Time
-	ApprovedAt             time.Time
 	IsApproved             bool
 }

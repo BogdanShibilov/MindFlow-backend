@@ -35,14 +35,14 @@ func (r *AuthRoutes) Register(ctx *gin.Context) {
 
 	var req *dto.RegisterRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		r.log.Error(op, err)
+		r.log.Error("failed to bind json data", op, err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid JSON"})
 		return
 	}
 
 	err := r.auth.RegisterNewUser(ctx, req.Email, req.Password)
 	if err != nil {
-		r.log.Error(op, err)
+		r.log.Error("failed to create a new user", op, err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create a new user"})
 		return
 	}
@@ -55,7 +55,7 @@ func (r *AuthRoutes) Login(ctx *gin.Context) {
 
 	var req *dto.LoginRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		r.log.Error(op, err)
+		r.log.Error("failed to bind json data", op, err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid JSON"})
 		return
 	}
@@ -74,7 +74,7 @@ func (r *AuthRoutes) Login(ctx *gin.Context) {
 			return
 		}
 
-		r.log.Error(op, err)
+		r.log.Error("failed to login", op, err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to login"})
 		return
 	}

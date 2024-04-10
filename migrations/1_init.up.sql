@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS users
     uuid uuid DEFAULT gen_random_uuid(),
     email VARCHAR(255) NOT NULL UNIQUE,
     pass_hash BYTEA NOT NULL,
-    roles VARCHAR[] NOT NULL,
+    roles VARCHAR[] DEFAULT '{}',
     PRIMARY KEY (uuid)
 );
 CREATE INDEX IF NOT EXISTS idx_email on users (email);
@@ -20,12 +20,11 @@ CREATE TABLE IF NOT EXISTS user_details
 CREATE TABLE IF NOT EXISTS expert_info
 (
     user_uuid UUID PRIMARY KEY,
-    position VARCHAR(255),
-    charge_per_hour INTEGER,
-    experience_description TEXT,
-    expertise_at_description TEXT,
-    submitted_at TIMESTAMP,
-    approved_at TIMESTAMP,
-    is_approved BOOLEAN,
+    position VARCHAR(255) NOT NULL,
+    charge_per_hour INTEGER NOT NULL,
+    experience_description TEXT NOT NULL,
+    expertise_at_description TEXT NOT NULL,
+    submitted_at TIMESTAMP DEFAULT now(),
+    is_approved BOOLEAN DEFAULT false,
     FOREIGN KEY (user_uuid) REFERENCES users(uuid) ON DELETE CASCADE
 );

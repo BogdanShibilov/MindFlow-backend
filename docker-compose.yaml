@@ -18,15 +18,15 @@ services:
     image: postgres:16.2
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -d mindflow -U root"]
-      interval: 5s
+      interval: 7s
       timeout: 10s
-      retries: 5
-      start_period: 5s
+      retries: 7
+      start_period: 10s
     environment:
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=root
       - POSTGRES_DB=mindflow
-    volumes:
-      - ./docker-data/mindflow-pg:/var/lib/postgresql/data:rw
+    # volumes:
+    #   - ./docker-data/mindflow-pg:/var/lib/postgresql/data:rw
     ports:
       - "5432:5432"
