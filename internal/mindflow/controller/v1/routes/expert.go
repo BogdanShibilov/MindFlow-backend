@@ -3,10 +3,12 @@ package routes
 import (
 	"log/slog"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 
 	"github.com/bogdanshibilov/mindflowbackend/internal/mindflow/controller/v1/dto"
+	"github.com/bogdanshibilov/mindflowbackend/internal/mindflow/controller/v1/middleware"
 	"github.com/bogdanshibilov/mindflowbackend/internal/mindflow/services/expert"
 )
 
@@ -24,6 +26,7 @@ func NewExpertRoutes(handler *gin.RouterGroup, log *slog.Logger, experts *expert
 	expertsHandler := handler.Group("/expert")
 	{
 		expertsHandler.GET("/", r.ExpertInfo)
+		expertsHandler.Use(middleware.RequireJwt(os.Getenv("JWTSECRET")))
 		expertsHandler.POST("/", r.CreateExpert)
 		expertsHandler.POST("/approve/:id", r.ApproveExpert)
 	}
@@ -67,6 +70,21 @@ func (r *ExpertRoutes) ExpertInfo(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, expertInfo)
+}
+
+func (r *ExpertRoutes) ExpertInfoById(ctx *gin.Context) {
+	const op = "ExpertRoutes.ExpertInfoById"
+
+	id := ctx.Param("id")
+
+	expert, err := r.experts.ExpertById(ctx, id)
+	if err != nil {
+		r.log.Error("failed to get expert", op, err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get expert"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, expert)
 }
 
 func (r *ExpertRoutes) ApproveExpert(ctx *gin.Context) {

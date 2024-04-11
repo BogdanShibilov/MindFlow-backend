@@ -46,7 +46,7 @@ func (a *App) Run() {
 		pgDb,
 		pgDb,
 		a.cfg.TokenTTL,
-		a.cfg.Secret,
+		os.Getenv("JWTSECRET"),
 	)
 
 	experts := expert.New(pgDb, pgDb)

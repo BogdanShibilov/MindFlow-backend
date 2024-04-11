@@ -76,6 +76,22 @@ func (s *Service) ExpertInfo(ctx context.Context) ([]entity.ExpertInfo, error) {
 	return expertInfo, nil
 }
 
+func (s *Service) ExpertById(ctx context.Context, id string) (*entity.ExpertInfo, error) {
+	const op = "Expert.ExpertById"
+
+	uuid, err := uuid.Parse(id)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	expertInfo, err := s.expertProvider.ExpertByUuid(ctx, &uuid)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return expertInfo, nil
+}
+
 func (s *Service) ApproveExpertById(ctx context.Context, id string) error {
 	const op = "Expert.ApproveExpertById"
 

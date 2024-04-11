@@ -5,4 +5,3 @@ http_server:
   idle_timeout: 30s
 jwt:
   token_ttl: 3600s
-  secret: "secret"

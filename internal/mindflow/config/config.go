@@ -22,7 +22,6 @@ type HTTPServer struct {
 
 type Jwt struct {
 	TokenTTL time.Duration `yaml:"token_ttl" env-default:"3600s"`
-	Secret   string        `yaml:"secret" env-required:"true"`
 }
 
 func MustLoad() *Config {
