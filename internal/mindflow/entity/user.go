@@ -14,10 +14,12 @@ type User struct {
 }
 
 type UserDetails struct {
-	UserUuid    uuid.UUID
-	Name        string
-	Surname     string
-	PhoneNumber string
+	UserUuid              uuid.UUID
+	Name                  string
+	Surname               string
+	PhoneNumber           string
+	ProfessionalField     string
+	ExperienceDescription string
 }
 
 func (u *UserDetails) FullName() string {

@@ -51,9 +51,7 @@ func (s *Service) CreateExpertInfo(
 
 	expertInfo := &entity.ExpertInfo{
 		UserUuid:               uuid,
-		Position:               position,
 		ChargePerHour:          chargePerHour,
-		ExperienceDescription:  experienceDesc,
 		ExpertiseAtDescription: expertiseAtDesc,
 	}
 

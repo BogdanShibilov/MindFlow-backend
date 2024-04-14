@@ -18,10 +18,10 @@ func (s *Storage) SaveExpertInfo(ctx context.Context, info *entity.ExpertInfo) e
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
 	sql, args, err := psql.Insert("expert_info").
-		Columns("user_uuid", "position", "charge_per_hour",
-			"experience_description", "expertise_at_description").
-		Values(info.UserUuid, info.Position, info.ChargePerHour,
-			info.ExperienceDescription, info.ExpertiseAtDescription).
+		Columns("user_uuid", "charge_per_hour",
+			"expertise_at_description").
+		Values(info.UserUuid, info.ChargePerHour,
+			info.ExpertiseAtDescription).
 		ToSql()
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
@@ -42,12 +42,11 @@ func (s *Storage) UpdateExpertInfo(ctx context.Context, info *entity.ExpertInfo)
 	sql, args, err := psql.Update("expert_info").
 		SetMap(
 			sq.Eq{
-				"position":                 info.Position,
 				"charge_per_hour":          info.ChargePerHour,
-				"experience_description":   info.ExperienceDescription,
 				"expertise_at_description": info.ExpertiseAtDescription,
 				"is_approved":              info.IsApproved,
-			}).
+			},
+		).
 		Where("user_uuid IN (?)", info.UserUuid).
 		ToSql()
 	if err != nil {
@@ -78,12 +77,12 @@ func (s *Storage) ExpertByUuid(ctx context.Context, uuid *uuid.UUID) (*entity.Ex
 
 	var expertInfo entity.ExpertInfo
 	row := s.conn.QueryRow(ctx, sql, args...)
-	err = row.Scan(&expertInfo.UserUuid, &expertInfo.Position, &expertInfo.ChargePerHour,
-		&expertInfo.ExperienceDescription, &expertInfo.ExpertiseAtDescription,
+	err = row.Scan(&expertInfo.UserUuid, &expertInfo.ChargePerHour,
+		&expertInfo.ExpertiseAtDescription,
 		&expertInfo.SubmittedAt, &expertInfo.IsApproved)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, fmt.Errorf("%s: %w", op, storage.ErrUserNotFound)
+			return nil, fmt.Errorf("%s: %w", op, storage.ErrEntityNotFound)
 		}
 
 		return nil, fmt.Errorf("%s: %w", op, err)

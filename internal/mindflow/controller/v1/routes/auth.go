@@ -62,7 +62,7 @@ func (r *AuthRoutes) Login(ctx *gin.Context) {
 
 	token, err := r.auth.Login(ctx, req.Email, req.Password)
 	if err != nil {
-		if errors.Is(err, storage.ErrUserNotFound) {
+		if errors.Is(err, storage.ErrEntityNotFound) {
 			r.log.Info("non existant user logging attempt", op, err)
 			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
 			return

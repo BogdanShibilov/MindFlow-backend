@@ -49,7 +49,7 @@ func (s *Storage) UserByEmail(ctx context.Context, email string) (*entity.User, 
 	err = row.Scan(&user.Uuid, &user.Email, &user.PassHash)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, fmt.Errorf("%s: %w", op, storage.ErrUserNotFound)
+			return nil, fmt.Errorf("%s: %w", op, storage.ErrEntityNotFound)
 		}
 
 		return nil, fmt.Errorf("%s: %w", op, err)
