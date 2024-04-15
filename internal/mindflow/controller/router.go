@@ -8,6 +8,7 @@ import (
 
 	"github.com/bogdanshibilov/mindflowbackend/internal/mindflow/controller/v1/routes"
 	"github.com/bogdanshibilov/mindflowbackend/internal/mindflow/services/auth"
+	"github.com/bogdanshibilov/mindflowbackend/internal/mindflow/services/enrollment"
 	"github.com/bogdanshibilov/mindflowbackend/internal/mindflow/services/expert"
 )
 
@@ -16,6 +17,7 @@ func New(
 	log *slog.Logger,
 	auth *auth.Auth,
 	experts *expert.Service,
+	enrollments *enrollment.Service,
 ) {
 	handler.Use(gin.Recovery())
 
@@ -25,5 +27,7 @@ func New(
 	{
 		routes.NewAuthRoutes(h, log, auth)
 		routes.NewExpertRoutes(h, log, experts)
+		routes.NewEnrollmentRoutes(h, log, enrollments)
+		routes.NewUserRoutes(h, log, auth)
 	}
 }

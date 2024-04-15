@@ -60,6 +60,7 @@ func (a *Auth) RegisterNewUser(ctx context.Context, email, pass string, name str
 	newUser := &entity.User{
 		Email:    email,
 		PassHash: passHash,
+		Name:     name,
 	}
 
 	err = a.userSaver.SaveUser(ctx, newUser)
@@ -74,7 +75,6 @@ func (a *Auth) RegisterNewUser(ctx context.Context, email, pass string, name str
 
 	newUserDetails := &entity.UserDetails{
 		UserUuid:              newUser.Uuid,
-		Name:                  name,
 		PhoneNumber:           "",
 		ProfessionalField:     "",
 		ExperienceDescription: "",
@@ -109,23 +109,26 @@ func (a *Auth) Login(ctx context.Context, email, pass string) (string, error) {
 
 func (a *Auth) UpdateUserDetails(
 	ctx context.Context,
-	uuid uuid.UUID,
-	name string,
+	id string,
 	phoneNumber string,
 	professionalField string,
 	experienceDescription string,
 ) error {
 	const op = "Auth.UpdateUserDetails"
 
+	uuid, err := uuid.Parse(id)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
 	newUserDetails := &entity.UserDetails{
 		UserUuid:              uuid,
-		Name:                  name,
 		PhoneNumber:           phoneNumber,
 		ProfessionalField:     professionalField,
 		ExperienceDescription: experienceDescription,
 	}
 
-	err := a.userSaver.UpdateUserDetails(ctx, newUserDetails)
+	err = a.userSaver.UpdateUserDetails(ctx, newUserDetails)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
@@ -133,8 +136,13 @@ func (a *Auth) UpdateUserDetails(
 	return nil
 }
 
-func (a *Auth) UserDetailsByUserUuid(ctx context.Context, uuid uuid.UUID) (*entity.UserDetails, error) {
+func (a *Auth) UserDetailsByUserUuid(ctx context.Context, id string) (*entity.UserDetails, error) {
 	const op = "Auth.UserDetailsByUserUuid"
+
+	uuid, err := uuid.Parse(id)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
 
 	userDetails, err := a.userProvider.UserDetailsByUserUuid(ctx, uuid)
 	if err != nil {

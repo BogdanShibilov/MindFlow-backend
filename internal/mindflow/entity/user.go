@@ -9,11 +9,11 @@ type User struct {
 	Email    string
 	PassHash []byte
 	Roles    []string
+	Name     string
 }
 
 type UserDetails struct {
 	UserUuid              uuid.UUID
-	Name                  string
 	PhoneNumber           string
 	ProfessionalField     string
 	ExperienceDescription string

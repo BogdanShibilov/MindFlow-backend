@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS users
     email VARCHAR(255) NOT NULL UNIQUE,
     pass_hash BYTEA NOT NULL,
     roles VARCHAR[] DEFAULT '{}',
+    name VARCHAR(255),
     PRIMARY KEY (uuid)
 );
 CREATE INDEX IF NOT EXISTS idx_email on users (email);
@@ -11,7 +12,6 @@ CREATE INDEX IF NOT EXISTS idx_email on users (email);
 CREATE TABLE IF NOT EXISTS user_details
 (
     user_uuid uuid PRIMARY KEY,
-    name VARCHAR(255),
     phone_number VARCHAR(20),
     professional_field VARCHAR(255),
     experience_description TEXT,

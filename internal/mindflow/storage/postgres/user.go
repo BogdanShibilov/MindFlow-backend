@@ -18,8 +18,8 @@ func (s *Storage) SaveUser(ctx context.Context, user *entity.User) error {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
 	sql, args, err := psql.Insert("users").
-		Columns("email", "pass_hash").
-		Values(user.Email, user.PassHash).
+		Columns("email", "pass_hash", "name").
+		Values(user.Email, user.PassHash, user.Name).
 		ToSql()
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
@@ -37,7 +37,7 @@ func (s *Storage) UserByEmail(ctx context.Context, email string) (*entity.User, 
 	const op = "storage.postgres.UserByEmail"
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
-	sql, args, err := psql.Select("uuid", "email", "pass_hash").
+	sql, args, err := psql.Select("uuid", "email", "pass_hash", "name").
 		From("users").
 		Where("email IN (?)", email).
 		ToSql()
@@ -47,7 +47,7 @@ func (s *Storage) UserByEmail(ctx context.Context, email string) (*entity.User, 
 
 	var user entity.User
 	row := s.conn.QueryRow(ctx, sql, args...)
-	err = row.Scan(&user.Uuid, &user.Email, &user.PassHash)
+	err = row.Scan(&user.Uuid, &user.Email, &user.PassHash, &user.Name)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, fmt.Errorf("%s: %w", op, storage.ErrEntityNotFound)
@@ -64,9 +64,9 @@ func (s *Storage) SaveUserDetails(ctx context.Context, userDetails *entity.UserD
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
 	sql, args, err := psql.Insert("user_details").
-		Columns("user_uuid", "name", "phone_number",
+		Columns("user_uuid", "phone_number",
 			"professional_field", "experience_description").
-		Values(userDetails.UserUuid, userDetails.Name, userDetails.PhoneNumber,
+		Values(userDetails.UserUuid, userDetails.PhoneNumber,
 			userDetails.ProfessionalField, userDetails.ExperienceDescription).
 		ToSql()
 
@@ -89,7 +89,6 @@ func (s *Storage) UpdateUserDetails(ctx context.Context, userDetails *entity.Use
 	sql, args, err := psql.Update("user_details").
 		SetMap(
 			sq.Eq{
-				"name":                   userDetails.Name,
 				"phone_number":           userDetails.PhoneNumber,
 				"professional_field":     userDetails.ProfessionalField,
 				"experience_description": userDetails.ProfessionalField,
@@ -113,7 +112,7 @@ func (s *Storage) UserDetailsByUserUuid(ctx context.Context, uuid uuid.UUID) (*e
 	const op = "storage.postgres.UserDetailsByUserUuid"
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
-	sql, args, err := psql.Select("user_uuid", "name", "phone_number",
+	sql, args, err := psql.Select("user_uuid", "phone_number",
 		"professional_field", "experience_description").
 		From("user_details").
 		Where("user_uuid IN (?)", uuid).
@@ -124,7 +123,7 @@ func (s *Storage) UserDetailsByUserUuid(ctx context.Context, uuid uuid.UUID) (*e
 
 	var userDetails entity.UserDetails
 	row := s.conn.QueryRow(ctx, sql, args...)
-	err = row.Scan(&userDetails.UserUuid, &userDetails.Name,
+	err = row.Scan(&userDetails.UserUuid,
 		&userDetails.PhoneNumber, &userDetails.ProfessionalField,
 		&userDetails.ExperienceDescription)
 	if err != nil {

@@ -142,3 +142,51 @@ func (s *Storage) EnrollmentsByMentorUuid(ctx context.Context, uuid uuid.UUID) (
 
 	return enrollments, nil
 }
+
+func (s *Storage) SaveMeeting(ctx context.Context, meeting *entity.Meeting) error {
+	const op = "storage.postgres.SaveMeeting"
+	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+
+	sql, args, err := psql.Insert("meetings").
+		Columns("enrollment_uuid", "link", "start_time", "end_time").
+		Values(meeting.EnrollmentUuid, meeting.Link,
+			meeting.StartTime, meeting.EndTime).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	_, err = s.conn.Exec(ctx, sql, args...)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	return nil
+}
+
+// Selects those meetings which didn't happen yet
+func (s *Storage) MeetingsByEnrollmentUuid(ctx context.Context, uuid uuid.UUID) ([]entity.Meeting, error) {
+	const op = "storage.postgres.MeetingsByEnrollmentUuid"
+	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+
+	sql, args, err := psql.Select("uuid", "enrollment_uuid", "link", "start_time", "end_time").
+		From("meetings").
+		Where("enrollment_uuid IN (?) AND start_time > now()", uuid).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	rows, err := s.conn.Query(ctx, sql, args...)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	defer rows.Close()
+
+	meetings, err := pgx.CollectRows(rows, pgx.RowToStructByPos[entity.Meeting])
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return meetings, nil
+}
