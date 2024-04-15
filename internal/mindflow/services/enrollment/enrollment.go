@@ -45,6 +45,7 @@ func (s *Service) CreateEnrollment(
 	ctx context.Context,
 	mentorId string,
 	menteeId string,
+	menteeQuestions string,
 ) error {
 	const op = "Expert.CreateEnrollment"
 
@@ -58,8 +59,10 @@ func (s *Service) CreateEnrollment(
 	}
 
 	enrollment := &entity.Enrollment{
-		MentorUuid: mentorUuid,
-		MenteeUuid: menteeUuid,
+		MentorUuid:      mentorUuid,
+		MenteeUuid:      menteeUuid,
+		IsApproved:      false,
+		MenteeQuestions: menteeQuestions,
 	}
 
 	err = s.enrollmentSaver.SaveEnrollment(ctx, enrollment)
@@ -96,4 +99,26 @@ func (s *Service) EnrollmentsByMemberId(
 	}
 
 	return enrollments, nil
+}
+
+func (s *Service) ApproveEnrollmentById(ctx context.Context, id string) error {
+	const op = "Expert.ApproveEnrollmentById"
+
+	uuid, err := uuid.Parse(id)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	enrollment, err := s.enrollmentProvider.EnrollmentByUuid(ctx, uuid)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	enrollment.IsApproved = true
+	err = s.enrollmentSaver.UpdateEnrollment(ctx, enrollment)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	return nil
 }

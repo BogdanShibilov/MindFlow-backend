@@ -12,7 +12,6 @@ CREATE TABLE IF NOT EXISTS user_details
 (
     user_uuid uuid PRIMARY KEY,
     name VARCHAR(255),
-    surname VARCHAR(255),
     phone_number VARCHAR(20),
     professional_field VARCHAR(255),
     experience_description TEXT,
@@ -34,6 +33,8 @@ CREATE TABLE IF NOT EXISTS enrollments
     uuid uuid DEFAULT gen_random_uuid(),
     mentor_uuid uuid NOT NULL,
     mentee_uuid uuid NOT NULL,
+    is_approved BOOLEAN DEFAULT false,
+    mentee_questions TEXT,
     PRIMARY KEY (uuid),
     FOREIGN KEY (mentor_uuid) REFERENCES users(uuid) ON DELETE CASCADE,
     FOREIGN KEY (mentee_uuid) REFERENCES users(uuid) ON DELETE CASCADE

@@ -40,7 +40,7 @@ func (r *AuthRoutes) Register(ctx *gin.Context) {
 		return
 	}
 
-	err := r.auth.RegisterNewUser(ctx, req.Email, req.Password)
+	err := r.auth.RegisterNewUser(ctx, req.Email, req.Password, req.Name)
 	if err != nil {
 		r.log.Error("failed to create a new user", op, err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create a new user"})

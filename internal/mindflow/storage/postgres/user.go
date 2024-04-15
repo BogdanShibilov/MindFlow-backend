@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
 	"github.com/bogdanshibilov/mindflowbackend/internal/mindflow/entity"
@@ -16,7 +17,8 @@ func (s *Storage) SaveUser(ctx context.Context, user *entity.User) error {
 	const op = "storage.postgres.SaveUser"
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
-	sql, args, err := psql.Insert("users").Columns("email", "pass_hash").
+	sql, args, err := psql.Insert("users").
+		Columns("email", "pass_hash").
 		Values(user.Email, user.PassHash).
 		ToSql()
 	if err != nil {
@@ -29,7 +31,6 @@ func (s *Storage) SaveUser(ctx context.Context, user *entity.User) error {
 	}
 
 	return nil
-
 }
 
 func (s *Storage) UserByEmail(ctx context.Context, email string) (*entity.User, error) {
@@ -56,4 +57,83 @@ func (s *Storage) UserByEmail(ctx context.Context, email string) (*entity.User, 
 	}
 
 	return &user, nil
+}
+
+func (s *Storage) SaveUserDetails(ctx context.Context, userDetails *entity.UserDetails) error {
+	const op = "storage.postgres.SaveUserDetails"
+	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+
+	sql, args, err := psql.Insert("user_details").
+		Columns("user_uuid", "name", "phone_number",
+			"professional_field", "experience_description").
+		Values(userDetails.UserUuid, userDetails.Name, userDetails.PhoneNumber,
+			userDetails.ProfessionalField, userDetails.ExperienceDescription).
+		ToSql()
+
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	_, err = s.conn.Exec(ctx, sql, args...)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	return nil
+}
+
+func (s *Storage) UpdateUserDetails(ctx context.Context, userDetails *entity.UserDetails) error {
+	const op = "storage.postgres.UpdateUserDetails"
+	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+
+	sql, args, err := psql.Update("user_details").
+		SetMap(
+			sq.Eq{
+				"name":                   userDetails.Name,
+				"phone_number":           userDetails.PhoneNumber,
+				"professional_field":     userDetails.ProfessionalField,
+				"experience_description": userDetails.ProfessionalField,
+			},
+		).
+		Where("user_uuid IN (?)", userDetails.UserUuid).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	_, err = s.conn.Exec(ctx, sql, args...)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	return nil
+}
+
+func (s *Storage) UserDetailsByUserUuid(ctx context.Context, uuid uuid.UUID) (*entity.UserDetails, error) {
+	const op = "storage.postgres.UserDetailsByUserUuid"
+	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+
+	sql, args, err := psql.Select("user_uuid", "name", "phone_number",
+		"professional_field", "experience_description").
+		From("user_details").
+		Where("user_uuid IN (?)", uuid).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	var userDetails entity.UserDetails
+	row := s.conn.QueryRow(ctx, sql, args...)
+	err = row.Scan(&userDetails.UserUuid, &userDetails.Name,
+		&userDetails.PhoneNumber, &userDetails.ProfessionalField,
+		&userDetails.ExperienceDescription)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, fmt.Errorf("%s: %w", op, storage.ErrEntityNotFound)
+		}
+
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return &userDetails, nil
 }

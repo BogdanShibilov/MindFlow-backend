@@ -7,9 +7,11 @@ import (
 )
 
 type Enrollment struct {
-	Uuid       uuid.UUID
-	MentorUuid uuid.UUID
-	MenteeUuid uuid.UUID
+	Uuid            uuid.UUID
+	MentorUuid      uuid.UUID
+	MenteeUuid      uuid.UUID
+	IsApproved      bool
+	MenteeQuestions string
 }
 
 type Meeting struct {

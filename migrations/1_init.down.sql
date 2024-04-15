@@ -2,4 +2,8 @@ DROP TABLE IF EXISTS user_details;
 
 DROP TABLE IF EXISTS expert_info;
 
+DROP TABLE IF EXISTS meetings;
+
+DROP TABLE IF EXISTS enrollments;
+
 DROP TABLE IF EXISTS users;

@@ -10,6 +10,7 @@ import (
 
 	"github.com/bogdanshibilov/mindflowbackend/internal/mindflow/entity"
 	"github.com/bogdanshibilov/mindflowbackend/internal/mindflow/lib/jwt"
+	"github.com/google/uuid"
 )
 
 type Auth struct {
@@ -25,10 +26,13 @@ var (
 
 type UserSaver interface {
 	SaveUser(ctx context.Context, user *entity.User) error
+	SaveUserDetails(ctx context.Context, userDetails *entity.UserDetails) error
+	UpdateUserDetails(ctx context.Context, userDetails *entity.UserDetails) error
 }
 
 type UserProvider interface {
 	UserByEmail(ctx context.Context, email string) (*entity.User, error)
+	UserDetailsByUserUuid(ctx context.Context, uuid uuid.UUID) (*entity.UserDetails, error)
 }
 
 func New(
@@ -45,7 +49,7 @@ func New(
 	}
 }
 
-func (a *Auth) RegisterNewUser(ctx context.Context, email, pass string) error {
+func (a *Auth) RegisterNewUser(ctx context.Context, email, pass string, name string) error {
 	const op = "Auth.RegisterNewUser"
 
 	passHash, err := bcrypt.GenerateFromPassword([]byte(pass), bcrypt.DefaultCost)
@@ -59,6 +63,23 @@ func (a *Auth) RegisterNewUser(ctx context.Context, email, pass string) error {
 	}
 
 	err = a.userSaver.SaveUser(ctx, newUser)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	newUser, err = a.userProvider.UserByEmail(ctx, newUser.Email)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	newUserDetails := &entity.UserDetails{
+		UserUuid:              newUser.Uuid,
+		Name:                  name,
+		PhoneNumber:           "",
+		ProfessionalField:     "",
+		ExperienceDescription: "",
+	}
+	err = a.userSaver.SaveUserDetails(ctx, newUserDetails)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
@@ -84,4 +105,41 @@ func (a *Auth) Login(ctx context.Context, email, pass string) (string, error) {
 	}
 
 	return token, nil
+}
+
+func (a *Auth) UpdateUserDetails(
+	ctx context.Context,
+	uuid uuid.UUID,
+	name string,
+	phoneNumber string,
+	professionalField string,
+	experienceDescription string,
+) error {
+	const op = "Auth.UpdateUserDetails"
+
+	newUserDetails := &entity.UserDetails{
+		UserUuid:              uuid,
+		Name:                  name,
+		PhoneNumber:           phoneNumber,
+		ProfessionalField:     professionalField,
+		ExperienceDescription: experienceDescription,
+	}
+
+	err := a.userSaver.UpdateUserDetails(ctx, newUserDetails)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	return nil
+}
+
+func (a *Auth) UserDetailsByUserUuid(ctx context.Context, uuid uuid.UUID) (*entity.UserDetails, error) {
+	const op = "Auth.UserDetailsByUserUuid"
+
+	userDetails, err := a.userProvider.UserDetailsByUserUuid(ctx, uuid)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return userDetails, nil
 }

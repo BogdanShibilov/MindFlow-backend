@@ -17,8 +17,10 @@ func (s *Storage) SaveEnrollment(ctx context.Context, enrollment *entity.Enrollm
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
 	sql, args, err := psql.Insert("enrollments").
-		Columns("mentor_uuid", "mentee_uuid").
-		Values(enrollment.MentorUuid, enrollment.MenteeUuid).
+		Columns("mentor_uuid", "mentee_uuid",
+			"is_approved", "mentee_questions").
+		Values(enrollment.MentorUuid, enrollment.MenteeUuid,
+			enrollment.IsApproved, enrollment.MenteeQuestions).
 		ToSql()
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
@@ -39,8 +41,10 @@ func (s *Storage) UpdateEnrollment(ctx context.Context, enrollment *entity.Enrol
 	sql, args, err := psql.Update("enrollments").
 		SetMap(
 			sq.Eq{
-				"mentor_uuid": enrollment.MentorUuid,
-				"mentee_uuid": enrollment.MenteeUuid,
+				"mentor_uuid":      enrollment.MentorUuid,
+				"mentee_uuid":      enrollment.MenteeUuid,
+				"is_approved":      enrollment.IsApproved,
+				"mentee_questions": enrollment.MenteeQuestions,
 			},
 		).
 		Where("uuid IN (?)", enrollment.Uuid).
@@ -61,7 +65,8 @@ func (s *Storage) EnrollmentByUuid(ctx context.Context, uuid uuid.UUID) (*entity
 	const op = "storage.postgres.EnrollmentByUuid"
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
-	sql, args, err := psql.Select("uuid", "mentor_uuid", "mentee_uuid").
+	sql, args, err := psql.Select("uuid", "mentor_uuid", "mentee_uuid",
+		"is_approved", "mentee_questions").
 		From("enrollments").
 		Where("uuid IN (?)", uuid).
 		ToSql()
@@ -71,7 +76,8 @@ func (s *Storage) EnrollmentByUuid(ctx context.Context, uuid uuid.UUID) (*entity
 
 	var enrollment entity.Enrollment
 	row := s.conn.QueryRow(ctx, sql, args...)
-	err = row.Scan(&enrollment.Uuid, &enrollment.MentorUuid, &enrollment.MenteeUuid)
+	err = row.Scan(&enrollment.Uuid, &enrollment.MentorUuid, &enrollment.MenteeUuid,
+		&enrollment.IsApproved, &enrollment.MenteeQuestions)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, fmt.Errorf("%s: %w", op, storage.ErrEntityNotFound)
@@ -84,10 +90,11 @@ func (s *Storage) EnrollmentByUuid(ctx context.Context, uuid uuid.UUID) (*entity
 }
 
 func (s *Storage) EnrollmentsByMenteeUuid(ctx context.Context, uuid uuid.UUID) ([]entity.Enrollment, error) {
-	const op = "storage.postgres.ExpertInfo"
+	const op = "storage.postgres.EnrollmentsByMenteeUuid"
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
-	sql, args, err := psql.Select("uuid", "mentor_uuid", "mentee_uuid").
+	sql, args, err := psql.Select("uuid", "mentor_uuid", "mentee_uuid",
+		"is_approved", "mentee_questions").
 		From("enrollments").
 		Where("mentee_uuid = (?)", uuid).
 		ToSql()
@@ -110,10 +117,11 @@ func (s *Storage) EnrollmentsByMenteeUuid(ctx context.Context, uuid uuid.UUID) (
 }
 
 func (s *Storage) EnrollmentsByMentorUuid(ctx context.Context, uuid uuid.UUID) ([]entity.Enrollment, error) {
-	const op = "storage.postgres.ExpertInfo"
+	const op = "storage.postgres.EnrollmentsByMentorUuid"
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
-	sql, args, err := psql.Select("uuid", "mentor_uuid", "mentee_uuid").
+	sql, args, err := psql.Select("uuid", "mentor_uuid", "mentee_uuid",
+		"is_approved", "mentee_questions").
 		From("enrollments").
 		Where("mentor_uuid = (?)", uuid).
 		ToSql()
