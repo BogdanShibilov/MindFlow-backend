@@ -28,6 +28,7 @@ func NewExpertRoutes(handler *gin.RouterGroup, log *slog.Logger, experts *expert
 		expertsHandler.GET("/", r.ExpertInfo)
 		expertsHandler.Use(middleware.RequireJwt(os.Getenv("JWTSECRET")))
 		expertsHandler.POST("/", r.CreateExpert)
+		expertsHandler.Use(middleware.RequireAdmin())
 		expertsHandler.POST("/approve/:id", r.ApproveExpert)
 	}
 }
@@ -35,19 +36,24 @@ func NewExpertRoutes(handler *gin.RouterGroup, log *slog.Logger, experts *expert
 func (r *ExpertRoutes) CreateExpert(ctx *gin.Context) {
 	const op = "ExpertRoutes.CreateExpert"
 
-	var req *dto.CreateExpertRequest
+	var req *dto.BecomeExpertRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		r.log.Error("failed to bind json data", op, err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid JSON"})
 		return
 	}
 
+	id, ok := ctx.Get("userId")
+	if !ok {
+		r.log.Error("failed to get user details", op, "no userId in context")
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get user details"})
+		return
+	}
+
 	err := r.experts.CreateExpertInfo(
 		ctx,
-		req.Uuid,
-		req.Position,
+		id.(string),
 		req.ChargePerHour,
-		req.ExperienceDescription,
 		req.ExpertiseAtDescription,
 	)
 	if err != nil {

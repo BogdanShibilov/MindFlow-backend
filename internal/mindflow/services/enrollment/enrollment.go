@@ -29,6 +29,7 @@ type EnrollmentProvider interface {
 	EnrollmentByUuid(ctx context.Context, uuid uuid.UUID) (*entity.Enrollment, error)
 	EnrollmentsByMenteeUuid(ctx context.Context, uuid uuid.UUID) ([]entity.Enrollment, error)
 	EnrollmentsByMentorUuid(ctx context.Context, uuid uuid.UUID) ([]entity.Enrollment, error)
+	MeetingsByEnrollmentUuid(ctx context.Context, uuid uuid.UUID) ([]entity.Meeting, error)
 }
 
 func New(
@@ -121,4 +122,20 @@ func (s *Service) ApproveEnrollmentById(ctx context.Context, id string) error {
 	}
 
 	return nil
+}
+
+func (s *Service) MeetingsByEnrollmentUuid(ctx context.Context, id string) ([]entity.Meeting, error) {
+	const op = "Expert.MeetingsByEnrollmentUuid"
+
+	uuid, err := uuid.Parse(id)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	meetings, err := s.enrollmentProvider.MeetingsByEnrollmentUuid(ctx, uuid)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return meetings, nil
 }

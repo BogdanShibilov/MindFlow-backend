@@ -35,6 +35,24 @@ func RequireJwt(secret string) gin.HandlerFunc {
 	}
 }
 
+// Has to always go after RequireJwt
+func RequireAdmin() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		roles, ok := ctx.Get("roles")
+		if !ok {
+			ctx.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
+
+		if !contains(roles.([]string), "admin") {
+			ctx.AbortWithStatus(http.StatusForbidden)
+			return
+		}
+
+		ctx.Next()
+	}
+}
+
 func getAuthorizationToken(ctx *gin.Context) (string, error) {
 	tokenHeader := ctx.Request.Header.Get("Authorization")
 	tokenFields := strings.Fields(tokenHeader)
@@ -43,4 +61,13 @@ func getAuthorizationToken(ctx *gin.Context) (string, error) {
 	}
 
 	return tokenFields[1], nil
+}
+
+func contains(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
 }

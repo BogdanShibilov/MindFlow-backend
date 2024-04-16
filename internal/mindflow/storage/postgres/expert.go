@@ -65,8 +65,8 @@ func (s *Storage) ExpertByUuid(ctx context.Context, uuid *uuid.UUID) (*entity.Ex
 	const op = "storage.postgres.ExpertByUuid"
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
-	sql, args, err := psql.Select("user_uuid", "position", "charge_per_hour",
-		"experience_description", "expertise_at_description", "submitted_at",
+	sql, args, err := psql.Select("user_uuid", "charge_per_hour",
+		"expertise_at_description", "submitted_at",
 		"is_approved").
 		From("expert_info").
 		Where("user_uuid IN (?)", uuid).
@@ -95,8 +95,8 @@ func (s *Storage) ExpertInfo(ctx context.Context) ([]entity.ExpertInfo, error) {
 	const op = "storage.postgres.ExpertInfo"
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
-	sql, args, err := psql.Select("user_uuid", "position", "charge_per_hour",
-		"experience_description", "expertise_at_description", "submitted_at",
+	sql, args, err := psql.Select("user_uuid", "charge_per_hour",
+		"expertise_at_description", "submitted_at",
 		"is_approved").
 		From("expert_info").
 		ToSql()

@@ -12,6 +12,7 @@ import (
 type Service struct {
 	expertSaver    ExpertSaver
 	expertProvider ExpertProvider
+	users          Users
 }
 
 type ExpertSaver interface {
@@ -24,22 +25,27 @@ type ExpertProvider interface {
 	ExpertInfo(ctx context.Context) ([]entity.ExpertInfo, error)
 }
 
+type Users interface {
+	UpdateUser(ctx context.Context, user *entity.User) error
+	UserByUuid(ctx context.Context, uuid uuid.UUID) (*entity.User, error)
+}
+
 func New(
 	expertSaver ExpertSaver,
 	expertProvider ExpertProvider,
+	userUpdater Users,
 ) *Service {
 	return &Service{
 		expertSaver:    expertSaver,
 		expertProvider: expertProvider,
+		users:          userUpdater,
 	}
 }
 
 func (s *Service) CreateExpertInfo(
 	ctx context.Context,
 	expertId string,
-	position string,
 	chargePerHour int,
-	experienceDesc string,
 	expertiseAtDesc string,
 ) error {
 	const op = "Expert.CreateExpertInfo"
@@ -105,6 +111,17 @@ func (s *Service) ApproveExpertById(ctx context.Context, id string) error {
 
 	expertInfo.IsApproved = true
 	err = s.expertSaver.UpdateExpertInfo(ctx, expertInfo)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	user, err := s.users.UserByUuid(ctx, uuid)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	user.Roles = append(user.Roles, "expert")
+	err = s.users.UpdateUser(ctx, user)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}

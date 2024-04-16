@@ -25,7 +25,7 @@ func NewUserRoutes(handler *gin.RouterGroup, log *slog.Logger, auth *auth.Auth) 
 	userHandler := handler.Group("/user")
 	{
 		userHandler.Use(middleware.RequireJwt(os.Getenv("JWTSECRET")))
-		userHandler.GET("/:id", r.UserDetailsById)
+		userHandler.GET("/", r.UserDetailsById)
 		userHandler.POST("/updatedetails", r.UpdateUserDetails)
 	}
 }
@@ -40,9 +40,16 @@ func (r *UserRoutes) UpdateUserDetails(ctx *gin.Context) {
 		return
 	}
 
+	id, ok := ctx.Get("userId")
+	if !ok {
+		r.log.Error("failed to get user details", op, "no userId in context")
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get user details"})
+		return
+	}
+
 	err := r.auth.UpdateUserDetails(
 		ctx,
-		req.UserId,
+		id.(string),
 		req.PhoneNumber,
 		req.ProfessionalField,
 		req.ExperienceDescription,
@@ -59,12 +66,17 @@ func (r *UserRoutes) UpdateUserDetails(ctx *gin.Context) {
 func (r *UserRoutes) UserDetailsById(ctx *gin.Context) {
 	const op = "AuthRoutes.UserDetailsById"
 
-	id := ctx.Param("id")
+	id, ok := ctx.Get("userId")
+	if !ok {
+		r.log.Error("failed to get user details", op, "no userId in context")
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get user details"})
+		return
+	}
 
-	userDetails, err := r.auth.UserDetailsByUserUuid(ctx, id)
+	userDetails, err := r.auth.UserDetailsByUserUuid(ctx, id.(string))
 	if err != nil {
-		r.log.Error("failed to get expert", op, err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get expert"})
+		r.log.Error("failed to get user details", op, err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get user details"})
 		return
 	}
 

@@ -50,7 +50,7 @@ func (a *App) Run() {
 		os.Getenv("JWTSECRET"),
 	)
 
-	experts := expert.New(pgDb, pgDb)
+	experts := expert.New(pgDb, pgDb, pgDb)
 	enrollments := enrollment.New(pgDb, pgDb)
 
 	handler := gin.New()
