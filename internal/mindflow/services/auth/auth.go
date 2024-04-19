@@ -33,6 +33,7 @@ type UserSaver interface {
 type UserProvider interface {
 	UserByEmail(ctx context.Context, email string) (*entity.User, error)
 	UserDetailsByUserUuid(ctx context.Context, uuid uuid.UUID) (*entity.UserDetails, error)
+	UserByUuid(ctx context.Context, uuid uuid.UUID) (*entity.User, error)
 }
 
 func New(
@@ -136,7 +137,7 @@ func (a *Auth) UpdateUserDetails(
 	return nil
 }
 
-func (a *Auth) UserDetailsByUserUuid(ctx context.Context, id string) (*entity.UserDetails, error) {
+func (a *Auth) UserDetailsByUserId(ctx context.Context, id string) (*entity.UserDetails, error) {
 	const op = "Auth.UserDetailsByUserUuid"
 
 	uuid, err := uuid.Parse(id)
@@ -150,4 +151,20 @@ func (a *Auth) UserDetailsByUserUuid(ctx context.Context, id string) (*entity.Us
 	}
 
 	return userDetails, nil
+}
+
+func (a *Auth) UserById(ctx context.Context, id string) (*entity.User, error) {
+	const op = "Auth.UserById"
+
+	uuid, err := uuid.Parse(id)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	user, err := a.userProvider.UserByUuid(ctx, uuid)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return user, nil
 }

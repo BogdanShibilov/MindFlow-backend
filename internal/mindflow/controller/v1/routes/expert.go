@@ -25,9 +25,9 @@ func NewExpertRoutes(handler *gin.RouterGroup, log *slog.Logger, experts *expert
 
 	expertsHandler := handler.Group("/expert")
 	{
-		expertsHandler.GET("/", r.ExpertInfo)
+		expertsHandler.GET("", r.ExpertInfo)
 		expertsHandler.Use(middleware.RequireJwt(os.Getenv("JWTSECRET")))
-		expertsHandler.POST("/", r.CreateExpert)
+		expertsHandler.POST("", r.CreateExpert)
 		expertsHandler.Use(middleware.RequireAdmin())
 		expertsHandler.POST("/approve/:id", r.ApproveExpert)
 	}

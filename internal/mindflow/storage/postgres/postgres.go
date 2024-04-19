@@ -4,17 +4,17 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type Storage struct {
-	conn *pgx.Conn
+	conn *pgxpool.Pool
 }
 
 func New(connString string) (*Storage, error) {
 	const op = "storage.postgres.New"
 
-	conn, err := pgx.Connect(context.Background(), connString)
+	conn, err := pgxpool.New(context.Background(), connString)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
@@ -24,6 +24,6 @@ func New(connString string) (*Storage, error) {
 	}, nil
 }
 
-func (s *Storage) Close() error {
-	return s.conn.Close(context.Background())
+func (s *Storage) Close() {
+	s.conn.Close()
 }

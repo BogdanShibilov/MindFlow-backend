@@ -36,12 +36,7 @@ func (a *App) Run() {
 	if err != nil {
 		panic(op + " " + err.Error())
 	}
-	defer func() {
-		err := pgDb.Close()
-		if err != nil {
-			a.log.Error(op, err)
-		}
-	}()
+	defer pgDb.Close()
 
 	auth := auth.New(
 		pgDb,

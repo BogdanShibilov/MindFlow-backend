@@ -24,9 +24,11 @@ func NewUserRoutes(handler *gin.RouterGroup, log *slog.Logger, auth *auth.Auth) 
 
 	userHandler := handler.Group("/user")
 	{
+		userHandler.GET("/:id", r.UserByIdNoJwt)
+		userHandler.GET("/userdetails/:id", r.UserDetailsByIdNoJwt)
 		userHandler.Use(middleware.RequireJwt(os.Getenv("JWTSECRET")))
-		userHandler.GET("/", r.UserDetailsById)
-		userHandler.POST("/updatedetails", r.UpdateUserDetails)
+		userHandler.GET("/userdetails", r.UserDetailsById)
+		userHandler.POST("/updatemydetails", r.UpdateUserDetails)
 	}
 }
 
@@ -73,7 +75,41 @@ func (r *UserRoutes) UserDetailsById(ctx *gin.Context) {
 		return
 	}
 
-	userDetails, err := r.auth.UserDetailsByUserUuid(ctx, id.(string))
+	userDetails, err := r.auth.UserDetailsByUserId(ctx, id.(string))
+	if err != nil {
+		r.log.Error("failed to get user details", op, err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get user details"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, userDetails)
+}
+
+func (r *UserRoutes) UserByIdNoJwt(ctx *gin.Context) {
+	const op = "AuthRoutes.UserByIdNoJwt"
+
+	id := ctx.Param("id")
+
+	user, err := r.auth.UserById(ctx, id)
+	if err != nil {
+		r.log.Error("failed to get user", op, err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get user"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"id":    user.Uuid,
+		"email": user.Email,
+		"name":  user.Name,
+	})
+}
+
+func (r *UserRoutes) UserDetailsByIdNoJwt(ctx *gin.Context) {
+	const op = "AuthRoutes.UserDetailsByIdNoJwt"
+
+	id := ctx.Param("id")
+
+	userDetails, err := r.auth.UserDetailsByUserId(ctx, id)
 	if err != nil {
 		r.log.Error("failed to get user details", op, err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get user details"})
