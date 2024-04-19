@@ -4,6 +4,7 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 
 	"github.com/bogdanshibilov/mindflowbackend/internal/mindflow/controller/v1/routes"
@@ -20,6 +21,15 @@ func New(
 	enrollments *enrollment.Service,
 ) {
 	handler.Use(gin.Recovery())
+
+	handler.Use(cors.New(cors.Config{
+		AllowWildcard:    true,
+		AllowOrigins:     []string{"http://localhost:*"},
+		AllowMethods:     []string{"GET", "POST", "PUT"},
+		AllowHeaders:     []string{"Origin"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+	}))
 
 	handler.GET("/healthz", func(ctx *gin.Context) { ctx.Status(http.StatusOK) })
 
