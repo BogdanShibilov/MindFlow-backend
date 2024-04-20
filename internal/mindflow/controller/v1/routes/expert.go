@@ -25,10 +25,12 @@ func NewExpertRoutes(handler *gin.RouterGroup, log *slog.Logger, experts *expert
 
 	expertsHandler := handler.Group("/expert")
 	{
-		expertsHandler.GET("", r.ExpertInfo)
+		expertsHandler.GET("", r.ApprovedExpertInfo)
+		expertsHandler.GET("/:id", r.ExpertInfoById)
 		expertsHandler.Use(middleware.RequireJwt(os.Getenv("JWTSECRET")))
 		expertsHandler.POST("", r.CreateExpert)
 		expertsHandler.Use(middleware.RequireAdmin())
+		expertsHandler.GET("/nonapproved", r.NonApprovedExpertInfo)
 		expertsHandler.POST("/approve/:id", r.ApproveExpert)
 	}
 }
@@ -65,10 +67,23 @@ func (r *ExpertRoutes) CreateExpert(ctx *gin.Context) {
 	ctx.Status(http.StatusCreated)
 }
 
-func (r *ExpertRoutes) ExpertInfo(ctx *gin.Context) {
-	const op = "ExpertRoutes.ExpertInfo"
+func (r *ExpertRoutes) ApprovedExpertInfo(ctx *gin.Context) {
+	const op = "ExpertRoutes.ApprovedExpertInfo"
 
-	expertInfo, err := r.experts.ExpertInfo(ctx)
+	expertInfo, err := r.experts.ApprovedExpertInfo(ctx)
+	if err != nil {
+		r.log.Error("failed to get experts", op, err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get experts"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, expertInfo)
+}
+
+func (r *ExpertRoutes) NonApprovedExpertInfo(ctx *gin.Context) {
+	const op = "ExpertRoutes.NonApprovedExpertInfo"
+
+	expertInfo, err := r.experts.NonApprovedExpertInfo(ctx)
 	if err != nil {
 		r.log.Error("failed to get experts", op, err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get experts"})
@@ -90,7 +105,11 @@ func (r *ExpertRoutes) ExpertInfoById(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, expert)
+	ctx.JSON(http.StatusOK, gin.H{
+		"UserUuid":               expert.UserUuid,
+		"ExpertiseAtDescription": expert.ExpertiseAtDescription,
+		"ChargePerHour":          expert.ChargePerHour,
+	})
 }
 
 func (r *ExpertRoutes) ApproveExpert(ctx *gin.Context) {

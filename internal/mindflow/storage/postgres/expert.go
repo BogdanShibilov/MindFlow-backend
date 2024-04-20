@@ -117,3 +117,59 @@ func (s *Storage) ExpertInfo(ctx context.Context) ([]entity.ExpertInfo, error) {
 
 	return expertInfo, nil
 }
+
+func (s *Storage) ApprovedExpertInfo(ctx context.Context) ([]entity.ExpertInfo, error) {
+	const op = "storage.postgres.ApprovedExpertInfo"
+	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+
+	sql, args, err := psql.Select("user_uuid", "charge_per_hour",
+		"expertise_at_description", "submitted_at",
+		"is_approved").
+		From("expert_info").
+		Where("is_approved = TRUE").
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	rows, err := s.conn.Query(ctx, sql, args...)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	defer rows.Close()
+
+	expertInfo, err := pgx.CollectRows(rows, pgx.RowToStructByPos[entity.ExpertInfo])
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return expertInfo, nil
+}
+
+func (s *Storage) NonApprovedExpertInfo(ctx context.Context) ([]entity.ExpertInfo, error) {
+	const op = "storage.postgres.NonApprovedExpertInfo"
+	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+
+	sql, args, err := psql.Select("user_uuid", "charge_per_hour",
+		"expertise_at_description", "submitted_at",
+		"is_approved").
+		From("expert_info").
+		Where("is_approved = FALSE").
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	rows, err := s.conn.Query(ctx, sql, args...)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	defer rows.Close()
+
+	expertInfo, err := pgx.CollectRows(rows, pgx.RowToStructByPos[entity.ExpertInfo])
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return expertInfo, nil
+}

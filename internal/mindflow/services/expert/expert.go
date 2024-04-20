@@ -23,6 +23,8 @@ type ExpertSaver interface {
 type ExpertProvider interface {
 	ExpertByUuid(ctx context.Context, uuid *uuid.UUID) (*entity.ExpertInfo, error)
 	ExpertInfo(ctx context.Context) ([]entity.ExpertInfo, error)
+	ApprovedExpertInfo(ctx context.Context) ([]entity.ExpertInfo, error)
+	NonApprovedExpertInfo(ctx context.Context) ([]entity.ExpertInfo, error)
 }
 
 type Users interface {
@@ -69,10 +71,21 @@ func (s *Service) CreateExpertInfo(
 	return nil
 }
 
-func (s *Service) ExpertInfo(ctx context.Context) ([]entity.ExpertInfo, error) {
-	const op = "Expert.ExpertInfo"
+func (s *Service) ApprovedExpertInfo(ctx context.Context) ([]entity.ExpertInfo, error) {
+	const op = "Expert.ApprovedExpertInfo"
 
-	expertInfo, err := s.expertProvider.ExpertInfo(ctx)
+	expertInfo, err := s.expertProvider.ApprovedExpertInfo(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return expertInfo, nil
+}
+
+func (s *Service) NonApprovedExpertInfo(ctx context.Context) ([]entity.ExpertInfo, error) {
+	const op = "Expert.NonApprovedExpertInfo"
+
+	expertInfo, err := s.expertProvider.NonApprovedExpertInfo(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}

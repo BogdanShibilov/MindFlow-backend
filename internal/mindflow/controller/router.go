@@ -26,7 +26,7 @@ func New(
 		AllowWildcard:    true,
 		AllowOrigins:     []string{"http://localhost:*"},
 		AllowMethods:     []string{"GET", "POST", "PUT"},
-		AllowHeaders:     []string{"Origin"},
+		AllowHeaders:     []string{"Origin", "authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 	}))
