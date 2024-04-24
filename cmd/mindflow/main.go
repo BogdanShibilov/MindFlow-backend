@@ -4,8 +4,8 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/bogdanshibilov/mindflowbackend/internal/mindflow/app"
-	"github.com/bogdanshibilov/mindflowbackend/internal/mindflow/config"
+	"github.com/bogdanshibilov/mindflowbackend/internal/app"
+	"github.com/bogdanshibilov/mindflowbackend/internal/config"
 )
 
 const (
