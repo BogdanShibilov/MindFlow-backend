@@ -9,8 +9,10 @@ import (
 	"github.com/gin-gonic/gin"
 
 	authroutes "github.com/bogdanshibilov/mindflowbackend/internal/controller/http/v1/auth"
+	consultationroute "github.com/bogdanshibilov/mindflowbackend/internal/controller/http/v1/consultation"
 	expertroutes "github.com/bogdanshibilov/mindflowbackend/internal/controller/http/v1/expert"
 	authservice "github.com/bogdanshibilov/mindflowbackend/internal/services/auth"
+	consultationservice "github.com/bogdanshibilov/mindflowbackend/internal/services/consultation"
 	expertservice "github.com/bogdanshibilov/mindflowbackend/internal/services/expert"
 	userservice "github.com/bogdanshibilov/mindflowbackend/internal/services/user"
 )
@@ -21,6 +23,7 @@ func NewRouter(
 	auth *authservice.Service,
 	experts *expertservice.Service,
 	users *userservice.Service,
+	consultations *consultationservice.Service,
 ) {
 	handler.Use(gin.Recovery())
 
@@ -37,5 +40,6 @@ func NewRouter(
 	{
 		authroutes.New(h, log, auth)
 		expertroutes.New(h, log, experts, users)
+		consultationroute.New(h, log, consultations)
 	}
 }

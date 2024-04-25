@@ -14,6 +14,7 @@ import (
 	"github.com/bogdanshibilov/mindflowbackend/internal/httpserver"
 	"github.com/bogdanshibilov/mindflowbackend/internal/repository"
 	authservice "github.com/bogdanshibilov/mindflowbackend/internal/services/auth"
+	consultationservice "github.com/bogdanshibilov/mindflowbackend/internal/services/consultation"
 	expertservice "github.com/bogdanshibilov/mindflowbackend/internal/services/expert"
 	userservice "github.com/bogdanshibilov/mindflowbackend/internal/services/user"
 )
@@ -44,9 +45,11 @@ func (a *App) Run() {
 	auth := authservice.New(users, os.Getenv("JWTSECRET"), a.cfg.TokenTTL)
 	expertsRepo := repository.NewExpert(db)
 	experts := expertservice.New(expertsRepo, userRepo)
+	consultRepo := repository.NewConsultation(db)
+	consultations := consultationservice.New(*consultRepo)
 
 	handler := gin.New()
-	v1.NewRouter(handler, a.log, auth, experts, users)
+	v1.NewRouter(handler, a.log, auth, experts, users, consultations)
 	httpserver := httpserver.New(handler, httpserver.Port(a.cfg.Port))
 	httpserver.Run()
 
