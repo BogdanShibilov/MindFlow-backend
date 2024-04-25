@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 
@@ -45,8 +46,9 @@ func (r *routes) SignUp(ctx *gin.Context) {
 
 	err := r.auth.Register(
 		ctx,
-		req.Username,
+		strings.Split(req.Email, "@")[0],
 		req.Password,
+		req.Name,
 		req.Email,
 		req.Phone,
 		req.ProfessionalField,

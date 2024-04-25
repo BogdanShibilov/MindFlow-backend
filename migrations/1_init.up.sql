@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS staff
 CREATE TABLE IF NOT EXISTS user_profiles
 (
     user_uuid uuid PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
     phone VARCHAR(20),
     professional_field VARCHAR(255),

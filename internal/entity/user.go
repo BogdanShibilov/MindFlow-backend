@@ -15,6 +15,7 @@ type UserCredentials struct {
 }
 
 type UserProfile struct {
+	Name                  string `db:"name"`
 	Email                 string `db:"email"`
 	Phone                 string `db:"phone"`
 	ProfessionalField     string `db:"professional_field"`

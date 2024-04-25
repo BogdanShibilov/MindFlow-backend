@@ -62,6 +62,7 @@ func (r *Repo) CreateUser(ctx context.Context, user *entity.User) error {
 	insertProfileSql, insertProfileArgs, err := psql.Insert("user_profiles").
 		Columns(
 			"user_uuid",
+			"name",
 			"email",
 			"phone",
 			"professional_field",
@@ -69,6 +70,7 @@ func (r *Repo) CreateUser(ctx context.Context, user *entity.User) error {
 		).
 		Values(
 			uuid,
+			user.Name,
 			user.Email,
 			user.Phone,
 			user.ProfessionalField,
@@ -127,6 +129,7 @@ func (r *Repo) UpdateProfile(
 	sql, args, err := psql.Update("user_profiles").
 		SetMap(
 			sq.Eq{
+				"name":                   profile.Name,
 				"email":                  profile.Email,
 				"phone":                  profile.Phone,
 				"professional_field":     profile.ProfessionalField,
@@ -156,6 +159,7 @@ func (r *Repo) ByUuid(ctx context.Context, uuid uuid.UUID) (*entity.User, error)
 		"username",
 		"pass_hash",
 		"roles",
+		"name",
 		"email",
 		"phone",
 		"professional_field",
@@ -193,6 +197,7 @@ func (r *Repo) ByEmail(ctx context.Context, email string) (*entity.User, error) 
 		"username",
 		"pass_hash",
 		"roles",
+		"name",
 		"email",
 		"phone",
 		"professional_field",

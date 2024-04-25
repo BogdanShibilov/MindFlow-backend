@@ -1,7 +1,7 @@
 package authroutes
 
 type signUpRequest struct {
-	Username              string `json:"username" binding:"required"`
+	Name                  string `json:"name" binding:"required"`
 	Password              string `json:"password" binding:"required,min=5"`
 	Email                 string `json:"email" binding:"required,email"`
 	Phone                 string `json:"phone" binding:"required,e164"`

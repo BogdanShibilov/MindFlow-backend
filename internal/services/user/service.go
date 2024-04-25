@@ -24,6 +24,7 @@ func (s *Service) CreateUser(
 	ctx context.Context,
 	username string,
 	passHash string,
+	name string,
 	email string,
 	phone string,
 	professionalField string,
@@ -36,6 +37,7 @@ func (s *Service) CreateUser(
 		PassHash: []byte(passHash),
 	}
 	userProfile := entity.UserProfile{
+		Name:                  name,
 		Email:                 email,
 		Phone:                 phone,
 		ProfessionalField:     professionalField,
@@ -81,6 +83,7 @@ func (s *Service) UpdateCredentials(
 
 func (s *Service) UpdateProfile(
 	ctx context.Context,
+	newName string,
 	newEmail string,
 	newPhone string,
 	newProfessionalField string,
@@ -95,6 +98,7 @@ func (s *Service) UpdateProfile(
 	}
 
 	newProfile := &entity.UserProfile{
+		Name:                  newName,
 		Email:                 newEmail,
 		Phone:                 newPhone,
 		ProfessionalField:     newProfessionalField,
