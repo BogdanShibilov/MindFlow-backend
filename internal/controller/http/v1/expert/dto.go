@@ -14,6 +14,7 @@ type approveExpertRequest struct {
 type expertDTO struct {
 	UserId                string `json:"userId"`
 	Email                 string `json:"email"`
+	Name                  string `json:"name"`
 	Phone                 string `json:"phone"`
 	ProfessionalField     string `json:"professionalField"`
 	ExperienceDescription string `json:"experienceDescription"`
@@ -25,6 +26,7 @@ func expertDtoFrom(entity *entity.Expert) *expertDTO {
 	return &expertDTO{
 		UserId:                entity.UserUuid.String(),
 		Email:                 entity.Email,
+		Name:                  entity.Name,
 		Phone:                 entity.Phone,
 		ProfessionalField:     entity.ProfessionalField,
 		ExperienceDescription: entity.ExperienceDescription,

@@ -32,6 +32,7 @@ func New(
 
 	expertsHandler := handler.Group("/experts")
 	{
+		expertsHandler.GET("/:id", r.ById)
 		expertsHandler.GET("/approved", r.ApprovedExperts)
 		expertsHandler.Use(middleware.RequireJwt(os.Getenv("JWTSECRET")))
 		expertsHandler.Use(middleware.ParseClaimsIntoContext())
@@ -40,6 +41,19 @@ func New(
 		expertsHandler.GET("", r.Experts)
 		expertsHandler.PUT("/approve", r.ApproveExpert)
 	}
+}
+
+func (r *routes) ById(ctx *gin.Context) {
+	id := ctx.Param("id")
+
+	expert, err := r.experts.ById(ctx, id)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "bad id"})
+		return
+	}
+
+	dto := expertDtoFrom(expert)
+	ctx.JSON(http.StatusOK, dto)
 }
 
 func (r *routes) ApplyForExpert(ctx *gin.Context) {

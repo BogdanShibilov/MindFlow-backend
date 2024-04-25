@@ -78,3 +78,14 @@ func (s *Service) ApproveExpert(ctx context.Context, expertId string) error {
 
 	return s.expertRepo.UpdateExpertApplication(ctx, application, uuid)
 }
+
+func (s *Service) ById(ctx context.Context, expertId string) (*entity.Expert, error) {
+	const op = "services.expert.ApproveExpert"
+
+	uuid, err := uuid.Parse(expertId)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return s.expertRepo.ByUuid(ctx, uuid)
+}
