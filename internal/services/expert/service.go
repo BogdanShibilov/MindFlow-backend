@@ -108,3 +108,7 @@ func (s *Service) FilterData(ctx context.Context) (*FilterData, error) {
 		MinMaxPrice:    *minMaxPrice,
 	}, nil
 }
+
+func (s *Service) ExpertsWithFilter(ctx context.Context, filter map[string]any) ([]entity.Expert, error) {
+	return s.expertRepo.ExpertsWithFilter(ctx, filter)
+}

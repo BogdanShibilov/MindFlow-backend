@@ -32,6 +32,7 @@ func New(
 
 	expertsHandler := handler.Group("/experts")
 	{
+		expertsHandler.GET("/withfilter", r.ExpertsWithFilter)
 		expertsHandler.GET("/filterdata", r.FilterData)
 		expertsHandler.GET("/:id", r.ById)
 		expertsHandler.GET("/approved", r.ApprovedExperts)
@@ -164,4 +165,33 @@ func (r *routes) FilterData(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, fieldsData)
+}
+
+func (r *routes) ExpertsWithFilter(ctx *gin.Context) {
+	const op = "ExpertRoutes.ExpertsWithFilter"
+
+	filter := make(map[string]any)
+	minprice := ctx.Query("minprice")
+	if minprice != "" {
+		filter["price >= ?"] = minprice
+	}
+	maxprice := ctx.Query("maxprice")
+	if minprice != "" {
+		filter["price <= ?"] = maxprice
+	}
+	filter["status IN (?)"] = entity.Approved
+
+	experts, err := r.experts.ExpertsWithFilter(ctx, filter)
+	if err != nil {
+		r.log.Error("failed to get experts", op, err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "failed to get experts"})
+		return
+	}
+
+	DTOs := make([]expertDTO, 0)
+	for _, entity := range experts {
+		DTOs = append(DTOs, *expertDtoFrom(&entity))
+	}
+
+	ctx.JSON(http.StatusOK, DTOs)
 }

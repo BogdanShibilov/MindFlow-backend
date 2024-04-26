@@ -244,3 +244,44 @@ func (r *Repo) MinMaxPrice(ctx context.Context) (*MinMaxPrice, error) {
 
 	return &result, nil
 }
+
+func (r *Repo) ExpertsWithFilter(ctx context.Context, filter map[string]any) ([]entity.Expert, error) {
+	const op = "repository.expert.ExpertsWithFilter"
+
+	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+	expertsQuery := psql.Select(
+		"expert_information.user_uuid AS user_uuid",
+		"price",
+		"help_description",
+		"status",
+		"submitted_at",
+		"email",
+		"name",
+		"phone",
+		"professional_field",
+		"experience_description",
+	).
+		From("expert_information").
+		InnerJoin("expert_application ON expert_information.user_uuid = expert_application.user_uuid").
+		InnerJoin("user_profiles ON expert_application.user_uuid = user_profiles.user_uuid")
+
+	for column, value := range filter {
+		expertsQuery = expertsQuery.Where(column, value)
+	}
+	sql, args, err := expertsQuery.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	rows, err := r.Db.Query(ctx, sql, args...)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	experts, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[entity.Expert])
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return experts, err
+}
