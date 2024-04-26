@@ -1,27 +1,24 @@
 package expertroutes
 
 import (
-	"errors"
 	"strings"
 
-	"github.com/bogdanshibilov/mindflowbackend/internal/entity"
-	expertrepo "github.com/bogdanshibilov/mindflowbackend/internal/repository/expert"
 	"github.com/gin-gonic/gin"
+
+	"github.com/bogdanshibilov/mindflowbackend/internal/entity"
 )
 
-func getStatusQuery(ctx *gin.Context) (entity.Status, error) {
+func getStatusQuery(ctx *gin.Context) entity.Status {
 	statusString := ctx.Query("status")
 
 	switch strings.ToLower(statusString) {
-	case "pending":
-		return entity.Pending, nil
-	case "approved":
-		return entity.Approved, nil
-	case "rejected":
-		return entity.Rejected, nil
-	case "":
-		return expertrepo.AllStatus, nil
+	case "pending", "0":
+		return entity.Pending
+	case "approved", "1":
+		return entity.Approved
+	case "rejected", "2":
+		return entity.Rejected
 	default:
-		return -1, errors.New("invalid 'status' query parameter")
+		return -1
 	}
 }

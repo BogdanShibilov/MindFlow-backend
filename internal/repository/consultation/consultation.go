@@ -6,12 +6,13 @@ import (
 	"fmt"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/bogdanshibilov/mindflowbackend/internal/db/postgres"
-	"github.com/bogdanshibilov/mindflowbackend/internal/entity"
 	"github.com/google/uuid"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+
+	"github.com/bogdanshibilov/mindflowbackend/internal/db/postgres"
+	"github.com/bogdanshibilov/mindflowbackend/internal/entity"
 )
 
 type Repo struct {

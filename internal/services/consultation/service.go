@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/google/uuid"
+
 	"github.com/bogdanshibilov/mindflowbackend/internal/entity"
 	consultationrepo "github.com/bogdanshibilov/mindflowbackend/internal/repository/consultation"
-	"github.com/google/uuid"
 )
 
 type Service struct {

@@ -69,7 +69,7 @@ func RequireAdminPermission(userservice *userservice.Service, log *slog.Logger) 
 			return
 		}
 
-		claims, ok := claimsMaybe.(jwtservice.UserClaims)
+		claims, ok := claimsMaybe.(*jwtservice.UserClaims)
 		if !ok {
 			ctx.AbortWithStatus(http.StatusForbidden)
 			return

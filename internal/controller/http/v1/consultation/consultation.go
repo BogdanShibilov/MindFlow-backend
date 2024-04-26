@@ -5,9 +5,10 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/gin-gonic/gin"
+
 	"github.com/bogdanshibilov/mindflowbackend/internal/controller/http/v1/middleware"
 	consultationservice "github.com/bogdanshibilov/mindflowbackend/internal/services/consultation"
-	"github.com/gin-gonic/gin"
 )
 
 type routes struct {

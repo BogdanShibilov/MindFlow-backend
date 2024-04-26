@@ -9,7 +9,6 @@ import (
 
 	"github.com/bogdanshibilov/mindflowbackend/internal/controller/http/v1/middleware"
 	"github.com/bogdanshibilov/mindflowbackend/internal/entity"
-	expertrepo "github.com/bogdanshibilov/mindflowbackend/internal/repository/expert"
 	expertservice "github.com/bogdanshibilov/mindflowbackend/internal/services/expert"
 	userservice "github.com/bogdanshibilov/mindflowbackend/internal/services/user"
 )
@@ -32,10 +31,9 @@ func New(
 
 	expertsHandler := handler.Group("/experts")
 	{
-		expertsHandler.GET("/withfilter", r.ExpertsWithFilter)
 		expertsHandler.GET("/filterdata", r.FilterData)
 		expertsHandler.GET("/:id", r.ById)
-		expertsHandler.GET("/approved", r.ApprovedExperts)
+		expertsHandler.GET("/approved", r.ExpertsWithFilter)
 		expertsHandler.Use(middleware.RequireJwt(os.Getenv("JWTSECRET")))
 		expertsHandler.Use(middleware.ParseClaimsIntoContext())
 		expertsHandler.POST("", r.ApplyForExpert)
@@ -86,52 +84,23 @@ func (r *routes) ApplyForExpert(ctx *gin.Context) {
 	ctx.Status(http.StatusCreated)
 }
 
-func (r *routes) ApprovedExperts(ctx *gin.Context) {
-	const op = "ExpertRoutes.AcceptedExperts"
-
-	experts, err := r.experts.Experts(
-		ctx,
-		expertrepo.SelectStatus(entity.Approved),
-	)
-	if err != nil {
-		r.log.Error("failed to get approved experts", op, err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "failed to get experts"})
-		return
-	}
-
-	DTOs := make([]expertDTO, 0)
-	for _, entity := range experts {
-		DTOs = append(DTOs, *expertDtoFrom(&entity))
-	}
-
-	ctx.JSON(http.StatusOK, DTOs)
-}
-
 func (r *routes) Experts(ctx *gin.Context) {
 	const op = "ExpertRoutes.Experts"
 
-	status, err := getStatusQuery(ctx)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"message": "invalid status query"})
-		return
+	status := getStatusQuery(ctx)
+	filter := make(map[string]any)
+	if status >= 0 {
+		filter["status IN (?)"] = status
 	}
 
-	experts, err := r.experts.Experts(
-		ctx,
-		expertrepo.SelectStatus(status),
-	)
+	experts, err := r.experts.ExpertsWithFilter(ctx, filter)
 	if err != nil {
 		r.log.Error("failed to get pending experts", op, err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "failed to get experts"})
 		return
 	}
 
-	DTOs := make([]expertDTO, 0)
-	for _, entity := range experts {
-		DTOs = append(DTOs, *expertDtoFrom(&entity))
-	}
-
-	ctx.JSON(http.StatusOK, DTOs)
+	ctx.JSON(http.StatusOK, experts)
 }
 
 func (r *routes) ApproveExpert(ctx *gin.Context) {

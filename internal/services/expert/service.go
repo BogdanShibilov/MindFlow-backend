@@ -57,12 +57,12 @@ func (s *Service) ApplyForExpert(
 	return nil
 }
 
-func (s *Service) Experts(
-	ctx context.Context,
-	options ...expertrepo.SelectExpertsOption,
-) ([]entity.Expert, error) {
-	return s.expertRepo.Experts(ctx, options...)
-}
+// func (s *Service) Experts(
+// 	ctx context.Context,
+// 	options ...expertrepo.SelectExpertsOption,
+// ) ([]entity.Expert, error) {
+// 	return s.expertRepo.Experts(ctx, options...)
+// }
 
 func (s *Service) ApproveExpert(ctx context.Context, expertId string) error {
 	const op = "services.expert.ApproveExpert"
