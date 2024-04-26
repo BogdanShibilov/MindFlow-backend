@@ -32,6 +32,7 @@ func New(
 
 	expertsHandler := handler.Group("/experts")
 	{
+		expertsHandler.GET("/filterdata", r.FilterData)
 		expertsHandler.GET("/:id", r.ById)
 		expertsHandler.GET("/approved", r.ApprovedExperts)
 		expertsHandler.Use(middleware.RequireJwt(os.Getenv("JWTSECRET")))
@@ -150,4 +151,17 @@ func (r *routes) ApproveExpert(ctx *gin.Context) {
 	}
 
 	ctx.Status(http.StatusOK)
+}
+
+func (r *routes) FilterData(ctx *gin.Context) {
+	const op = "ExpertRoutes.FilterData"
+
+	fieldsData, err := r.experts.FilterData(ctx)
+	if err != nil {
+		r.log.Error("failed to get filter data", op, err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "failed to get filter data"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, fieldsData)
 }

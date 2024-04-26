@@ -187,3 +187,60 @@ func (r *Repo) UpdateExpertApplication(
 
 	return nil
 }
+
+func (r *Repo) ProffFieldListAndCount(ctx context.Context) ([]ProffFieldListAndCount, error) {
+	const op = "repository.expert.ProffFieldListAndCount"
+
+	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+	sql, args, err := psql.Select(
+		"professional_field",
+		"COUNT(*) AS count",
+	).
+		From("user_profiles").
+		InnerJoin("expert_application ON user_profiles.user_uuid = expert_application.user_uuid").
+		Where("status IN (?)", entity.Approved).
+		GroupBy("professional_field").
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	rows, err := r.Db.Query(ctx, sql, args...)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	result, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[ProffFieldListAndCount])
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return result, nil
+}
+
+func (r *Repo) MinMaxPrice(ctx context.Context) (*MinMaxPrice, error) {
+	const op = "repository.expert.MinMaxPrice"
+
+	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+	sql, args, err := psql.Select(
+		"MIN(price) AS min_price",
+		"MAX(price) AS max_price",
+	).
+		From("expert_information").
+		InnerJoin("expert_application ON expert_information.user_uuid = expert_application.user_uuid").
+		Where("status IN (?)", entity.Approved).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	rows, err := r.Db.Query(ctx, sql, args...)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	result, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[MinMaxPrice])
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return &result, nil
+}

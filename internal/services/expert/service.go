@@ -89,3 +89,22 @@ func (s *Service) ById(ctx context.Context, expertId string) (*entity.Expert, er
 
 	return s.expertRepo.ByUuid(ctx, uuid)
 }
+
+func (s *Service) FilterData(ctx context.Context) (*FilterData, error) {
+	const op = "services.expert.FilterData"
+
+	profFields, err := s.expertRepo.ProffFieldListAndCount(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	minMaxPrice, err := s.expertRepo.MinMaxPrice(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return &FilterData{
+		ProffFieldData: profFields,
+		MinMaxPrice:    *minMaxPrice,
+	}, nil
+}

@@ -1,6 +1,8 @@
 package expertroutes
 
-import "github.com/bogdanshibilov/mindflowbackend/internal/entity"
+import (
+	"github.com/bogdanshibilov/mindflowbackend/internal/entity"
+)
 
 type applyForExpertRequest struct {
 	HelpDescription string `json:"helpDescription" binding:"required"`
