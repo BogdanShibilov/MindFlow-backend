@@ -11,6 +11,7 @@ import (
 	authroutes "github.com/bogdanshibilov/mindflowbackend/internal/controller/http/v1/auth"
 	consultationroute "github.com/bogdanshibilov/mindflowbackend/internal/controller/http/v1/consultation"
 	expertroutes "github.com/bogdanshibilov/mindflowbackend/internal/controller/http/v1/expert"
+	userroutes "github.com/bogdanshibilov/mindflowbackend/internal/controller/http/v1/user"
 	authservice "github.com/bogdanshibilov/mindflowbackend/internal/services/auth"
 	consultationservice "github.com/bogdanshibilov/mindflowbackend/internal/services/consultation"
 	expertservice "github.com/bogdanshibilov/mindflowbackend/internal/services/expert"
@@ -41,5 +42,6 @@ func NewRouter(
 		authroutes.New(h, log, auth)
 		expertroutes.New(h, log, experts, users)
 		consultationroute.New(h, log, consultations)
+		userroutes.New(h, log, users)
 	}
 }

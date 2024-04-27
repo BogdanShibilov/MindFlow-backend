@@ -251,3 +251,38 @@ func (r *Repo) StaffMemberByUuid(ctx context.Context, uuid uuid.UUID) (*entity.S
 
 	return &member, nil
 }
+
+func (r *Repo) Users(ctx context.Context) ([]entity.User, error) {
+	const op = "repository.user.Users"
+
+	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+	sql, args, err := psql.Select(
+		"users.uuid AS uuid",
+		"username",
+		"pass_hash",
+		"roles",
+		"name",
+		"email",
+		"phone",
+		"professional_field",
+		"experience_description",
+	).
+		From("users").
+		InnerJoin("user_profiles ON users.uuid = user_profiles.user_uuid").
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	rows, err := r.Db.Query(ctx, sql, args...)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	users, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[entity.User])
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return users, err
+}

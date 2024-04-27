@@ -161,3 +161,7 @@ func (s *Service) IsAdmin(ctx context.Context, userId string) (bool, error) {
 
 	return false, nil
 }
+
+func (s *Service) Users(ctx context.Context) ([]entity.User, error) {
+	return s.userRepo.Users(ctx)
+}

@@ -16,7 +16,7 @@ import (
 func RequireJwt(secret string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		tokenString, err := getAuthorizationToken(ctx)
-		if err != nil {
+		if err != nil || tokenString == "null" {
 			ctx.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
@@ -78,7 +78,7 @@ func RequireAdminPermission(userservice *userservice.Service, log *slog.Logger) 
 		isAdmin, err := userservice.IsAdmin(ctx, claims.Uuid)
 		if err != nil {
 			if errors.Is(err, userrepo.ErrUserNotFound) {
-				log.Warn("non existing user tried to enter admin route")
+				log.Warn("non admin user tried to enter admin route")
 			} else {
 				log.Error("failed to check if user is admin", op, err)
 			}
