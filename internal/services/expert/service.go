@@ -57,11 +57,11 @@ func (s *Service) ApplyForExpert(
 	return nil
 }
 
-func (s *Service) ApproveExpert(ctx context.Context, expertId string) error {
+func (s *Service) ChangeExpertStatus(ctx context.Context, expertId string, status entity.Status) error {
 	const op = "services.expert.ApproveExpert"
 
 	application := &entity.ExpertApplication{
-		Status: entity.Approved,
+		Status: status,
 	}
 
 	uuid, err := uuid.Parse(expertId)

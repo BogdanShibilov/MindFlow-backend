@@ -9,8 +9,9 @@ type applyForExpertRequest struct {
 	Price           int    `json:"price" binding:"required"`
 }
 
-type approveExpertRequest struct {
+type changeStatusExpertRequest struct {
 	ExpertId string `json:"expertId" binding:"required"`
+	Status   int    `json:"status" binding:"required"`
 }
 
 type expertDTO struct {

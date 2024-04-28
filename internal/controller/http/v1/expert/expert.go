@@ -39,7 +39,7 @@ func New(
 		expertsHandler.POST("", r.ApplyForExpert)
 		expertsHandler.Use(middleware.RequireAdminPermission(users, log))
 		expertsHandler.GET("", r.Experts)
-		expertsHandler.PUT("/approve", r.ApproveExpert)
+		expertsHandler.PUT("/status", r.ChangeExpertStatus)
 	}
 }
 
@@ -103,17 +103,17 @@ func (r *routes) Experts(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, experts)
 }
 
-func (r *routes) ApproveExpert(ctx *gin.Context) {
-	const op = "ExpertRoutes.ApproveExpert"
+func (r *routes) ChangeExpertStatus(ctx *gin.Context) {
+	const op = "ExpertRoutes.ChangeExpertStatus"
 
-	var req *approveExpertRequest
+	var req *changeStatusExpertRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		r.log.Warn("invalid JSON received", op, err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": "invalid JSON"})
 		return
 	}
 
-	err := r.experts.ApproveExpert(ctx, req.ExpertId)
+	err := r.experts.ChangeExpertStatus(ctx, req.ExpertId, entity.Status(req.Status))
 	if err != nil {
 		r.log.Error("failed to approve expert", op, err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "failed to approve expert"})
