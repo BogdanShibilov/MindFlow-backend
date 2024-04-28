@@ -286,3 +286,23 @@ func (r *Repo) Users(ctx context.Context) ([]entity.User, error) {
 
 	return users, err
 }
+
+func (r *Repo) DeleteUser(ctx context.Context, uuid uuid.UUID) error {
+	const op = "repository.user.DeleteUser"
+
+	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+	sql, args, err := psql.Delete("users").
+		Where("uuid IN (?)", uuid).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	_, err = r.Db.Exec(ctx, sql, args...)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	return nil
+
+}

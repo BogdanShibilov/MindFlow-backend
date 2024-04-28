@@ -16,7 +16,7 @@ import (
 func RequireJwt(secret string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		tokenString, err := getAuthorizationToken(ctx)
-		if err != nil || tokenString == "null" {
+		if err != nil || tokenString == "null" || tokenString == "undefined" {
 			ctx.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
@@ -96,7 +96,7 @@ func RequireAdminPermission(userservice *userservice.Service, log *slog.Logger) 
 }
 
 func getAuthorizationToken(ctx *gin.Context) (string, error) {
-	tokenHeader := ctx.Request.Header.Get("Authorization")
+	tokenHeader := ctx.Request.Header.Get("authorization")
 	tokenFields := strings.Fields(tokenHeader)
 	if len(tokenFields) != 2 || tokenFields[0] != "Bearer" {
 		return "", errors.New("invalid or absent Authorization header")

@@ -165,3 +165,14 @@ func (s *Service) IsAdmin(ctx context.Context, userId string) (bool, error) {
 func (s *Service) Users(ctx context.Context) ([]entity.User, error) {
 	return s.userRepo.Users(ctx)
 }
+
+func (s *Service) DeleteUserById(ctx context.Context, id string) error {
+	const op = "services.user.DeleteUserById"
+
+	uuid, err := uuid.Parse(id)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	return s.userRepo.DeleteUser(ctx, uuid)
+}

@@ -23,3 +23,16 @@ func userDtoFrom(entity *entity.User) *userDto {
 		Phone:                 entity.Phone,
 	}
 }
+
+type ForceUpdateUserProfileRequest struct {
+	Id                    string `json:"id" binding:"required"`
+	Name                  string `json:"name" binding:"required"`
+	Email                 string `json:"email" binding:"required"`
+	Phone                 string `json:"phone" binding:"required"`
+	ProfessionalField     string `json:"professionalField" binding:"required"`
+	ExperienceDescription string `json:"experienceDescription" binding:"required"`
+}
+
+type DeleteUserByIdRequest struct {
+	Id string `json:"id" binding:"required"`
+}

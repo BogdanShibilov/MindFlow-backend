@@ -5,9 +5,10 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/gin-gonic/gin"
+
 	"github.com/bogdanshibilov/mindflowbackend/internal/controller/http/v1/middleware"
 	userservice "github.com/bogdanshibilov/mindflowbackend/internal/services/user"
-	"github.com/gin-gonic/gin"
 )
 
 type routes struct {
@@ -30,6 +31,8 @@ func New(
 		usersHandler.Use(middleware.RequireJwt(os.Getenv("JWTSECRET")))
 		usersHandler.Use(middleware.RequireAdminPermission(users, log))
 		usersHandler.GET("", r.Users)
+		usersHandler.PUT("/forceupdateuserprofile", r.ForceUpdateUserProfile)
+		usersHandler.DELETE("", r.DeleteUserById)
 	}
 }
 
@@ -49,4 +52,52 @@ func (r *routes) Users(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, DTOs)
+}
+
+func (r *routes) ForceUpdateUserProfile(ctx *gin.Context) {
+	const op = "UserRoutes.ForceUpdateUserProfile"
+
+	var req *ForceUpdateUserProfileRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		r.log.Warn("invalid JSON received", op, err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "invalid JSON"})
+		return
+	}
+
+	err := r.users.UpdateProfile(
+		ctx,
+		req.Name,
+		req.Email,
+		req.Phone,
+		req.ProfessionalField,
+		req.ExperienceDescription,
+		req.Id,
+	)
+	if err != nil {
+		r.log.Error("failed to update user", op, err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "failed to update user"})
+		return
+	}
+
+	ctx.Status(http.StatusOK)
+}
+
+func (r *routes) DeleteUserById(ctx *gin.Context) {
+	const op = "UserRoutes.DeleteUserById"
+
+	var req *DeleteUserByIdRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		r.log.Warn("invalid JSON received", op, err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "invalid JSON"})
+		return
+	}
+
+	err := r.users.DeleteUserById(ctx, req.Id)
+	if err != nil {
+		r.log.Error("failed to delete user", op, err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "failed to delete user"})
+		return
+	}
+
+	ctx.Status(http.StatusOK)
 }
