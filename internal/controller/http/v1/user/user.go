@@ -31,6 +31,7 @@ func New(
 		usersHandler.Use(middleware.RequireJwt(os.Getenv("JWTSECRET")))
 		usersHandler.Use(middleware.RequireAdminPermission(users, log))
 		usersHandler.GET("", r.Users)
+		usersHandler.GET("/:id", r.ById)
 		usersHandler.PUT("/forceupdateuserprofile", r.ForceUpdateUserProfile)
 		usersHandler.DELETE("", r.DeleteUserById)
 	}
@@ -100,4 +101,16 @@ func (r *routes) DeleteUserById(ctx *gin.Context) {
 	}
 
 	ctx.Status(http.StatusOK)
+}
+
+func (r *routes) ById(ctx *gin.Context) {
+	id := ctx.Param("id")
+
+	user, err := r.users.ById(ctx, id)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "bad id"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, userDtoFrom(user))
 }

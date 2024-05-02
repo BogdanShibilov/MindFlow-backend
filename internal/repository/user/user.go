@@ -155,7 +155,7 @@ func (r *Repo) ByUuid(ctx context.Context, uuid uuid.UUID) (*entity.User, error)
 
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	sql, args, err := psql.Select(
-		"uuid",
+		"users.uuid AS uuid",
 		"username",
 		"pass_hash",
 		"roles",
@@ -167,7 +167,7 @@ func (r *Repo) ByUuid(ctx context.Context, uuid uuid.UUID) (*entity.User, error)
 	).
 		From("users").
 		InnerJoin("user_profiles ON users.uuid = user_profiles.user_uuid").
-		Where("user.uuid IN (?)", uuid).
+		Where("uuid IN (?)", uuid).
 		ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)

@@ -3,6 +3,7 @@ package consultationservice
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -66,6 +67,10 @@ func (s *Service) ById(ctx context.Context, id string) (*entity.Consultation, er
 	return s.consultRepo.ByUuid(ctx, uuid)
 }
 
+func (s *Service) Consultations(ctx context.Context) ([]entity.Consultation, error) {
+	return s.consultRepo.Consultations(ctx)
+}
+
 func (s *Service) ByPersonId(ctx context.Context, id string, opts ...consultationrepo.ByPersonUuidOption) ([]entity.Consultation, error) {
 	const op = "services.consultation.ById"
 
@@ -77,13 +82,45 @@ func (s *Service) ByPersonId(ctx context.Context, id string, opts ...consultatio
 	return s.consultRepo.ByPersonUuid(ctx, uuid, opts...)
 }
 
-func (s *Service) ApproveApplication(ctx context.Context, id string) error {
-	const op = "services.consultation.ApproveApplication"
+func (s *Service) ChangeApplicationStatus(ctx context.Context, id string, status entity.Status) error {
+	const op = "services.consultation.ChangeApplicationStatus"
 
 	uuid, err := uuid.Parse(id)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
 
-	return s.consultRepo.UpdateApplicationStatus(ctx, uuid, entity.Approved)
+	return s.consultRepo.UpdateApplicationStatus(ctx, uuid, status)
+}
+
+func (s *Service) CreateMeeting(
+	ctx context.Context,
+	consultId string,
+	startTime time.Time,
+	link string,
+) error {
+	const op = "services.consultation.CreateMeeting"
+
+	uuid, err := uuid.Parse(consultId)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	meeting := &entity.ConsultationMeeting{
+		ConsultationUuid: uuid,
+		StartTime:        startTime,
+		Link:             link,
+	}
+
+	err = s.consultRepo.CreateMeeting(ctx, meeting)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	err = s.ChangeApplicationStatus(ctx, consultId, entity.Approved)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	return nil
 }

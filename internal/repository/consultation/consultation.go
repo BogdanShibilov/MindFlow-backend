@@ -93,6 +93,38 @@ func (r *Repo) CreateConsultation(ctx context.Context, consult *entity.Consultat
 	return nil
 }
 
+func (r *Repo) Consultations(ctx context.Context) ([]entity.Consultation, error) {
+	const op = "repository.consultation.Consultations"
+
+	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+	sql, args, err := psql.Select(
+		"consultation.uuid AS uuid",
+		"mentee_uuid",
+		"status",
+		"mentee_questions",
+		"submitted_at",
+	).
+		From("consultation").
+		InnerJoin("consultation_application ON consultation.uuid = consultation_application.consultation_uuid").
+		Where("status IN (?)", entity.Pending).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	rows, err := r.Db.Query(ctx, sql, args...)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	applications, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[entity.Consultation])
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return applications, err
+}
+
 func (r *Repo) ByUuid(ctx context.Context, uuid uuid.UUID) (*entity.Consultation, error) {
 	const op = "repository.consultation.ByUuid"
 

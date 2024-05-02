@@ -41,7 +41,7 @@ func NewRouter(
 	{
 		authroutes.New(h, log, auth)
 		expertroutes.New(h, log, experts, users)
-		consultationroute.New(h, log, consultations)
+		consultationroute.New(h, log, consultations, users)
 		userroutes.New(h, log, users)
 	}
 }
