@@ -30,7 +30,7 @@ func NewRouter(
 
 	handler.Use(cors.New(cors.Config{
 		AllowWildcard: true,
-		AllowOrigins:  []string{"http://localhost:*"},
+		AllowOrigins:  []string{"*"},
 		AllowMethods:  []string{"GET", "POST", "PUT", "DELETE"},
 		AllowHeaders:  []string{"Origin", "authorization", "content-type", "accept"},
 	}))
