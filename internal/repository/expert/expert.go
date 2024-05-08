@@ -240,3 +240,30 @@ func (r *Repo) ExpertsWithFilter(ctx context.Context, filter map[string]any) ([]
 
 	return experts, err
 }
+
+func (r *Repo) DoesExist(ctx context.Context, uuid uuid.UUID) (bool, error) {
+	const op = "repository.expert.DoesExist"
+
+	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+	sql, args, err := psql.Select(
+		"Count(*)",
+	).
+		From("expert_application").
+		Where("user_uuid IN (?)", uuid).
+		ToSql()
+	if err != nil {
+		return false, fmt.Errorf("%s: %w", op, err)
+	}
+
+	var count int
+	err = r.Db.QueryRow(ctx, sql, args...).Scan(&count)
+	if err != nil {
+		return false, fmt.Errorf("%s: %w", op, err)
+	}
+
+	if count > 0 {
+		return true, nil
+	} else {
+		return false, nil
+	}
+}

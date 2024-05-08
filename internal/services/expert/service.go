@@ -105,3 +105,14 @@ func (s *Service) FilterData(ctx context.Context) (*FilterData, error) {
 func (s *Service) ExpertsWithFilter(ctx context.Context, filter map[string]any) ([]entity.Expert, error) {
 	return s.expertRepo.ExpertsWithFilter(ctx, filter)
 }
+
+func (s *Service) DoesExist(ctx context.Context, id string) (bool, error) {
+	const op = "services.expert.DoesExist"
+
+	uuid, err := uuid.Parse(id)
+	if err != nil {
+		return false, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return s.expertRepo.DoesExist(ctx, uuid)
+}

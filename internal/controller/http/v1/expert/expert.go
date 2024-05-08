@@ -37,6 +37,7 @@ func New(
 		expertsHandler.Use(middleware.RequireJwt(os.Getenv("JWTSECRET")))
 		expertsHandler.Use(middleware.ParseClaimsIntoContext())
 		expertsHandler.POST("", r.ApplyForExpert)
+		expertsHandler.GET("/alreadyapplied", r.AlreadyApplied)
 		expertsHandler.Use(middleware.RequireAdminPermission(users, log))
 		expertsHandler.GET("", r.Experts)
 		expertsHandler.PUT("/status", r.ChangeExpertStatus)
@@ -163,4 +164,19 @@ func (r *routes) ExpertsWithFilter(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, DTOs)
+}
+
+func (r *routes) AlreadyApplied(ctx *gin.Context) {
+	const op = "ExpertRoutes.AlreadyApplied"
+
+	id := ctx.GetString("uuid")
+
+	alreadyApplied, err := r.experts.DoesExist(ctx, id)
+	if err != nil {
+		r.log.Error("failed to check existance", op, err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "failed to check existance"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"alreadyApplied": alreadyApplied})
 }
