@@ -179,7 +179,7 @@ func (r *Repo) ByPersonUuid(ctx context.Context, uuid uuid.UUID, opts ...ByPerso
 	).
 		From("consultation").
 		InnerJoin("consultation_application ON consultation.uuid = consultation_application.consultation_uuid").
-		Where(options.whoseUuid+" IN (?)", uuid).
+		Where(string(options.whoseUuid)+" IN (?)", uuid).
 		ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
@@ -208,7 +208,7 @@ func (r *Repo) MeetingsByConsultationUuid(ctx context.Context, uuid uuid.UUID) (
 		"link",
 	).
 		From("consultation_meeting").
-		Where("consultation_uuid IN ").
+		Where("consultation_uuid IN (?)", uuid).
 		ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)

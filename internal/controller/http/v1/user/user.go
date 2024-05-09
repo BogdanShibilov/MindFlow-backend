@@ -29,9 +29,9 @@ func New(
 	usersHandler := handler.Group("/users")
 	{
 		usersHandler.Use(middleware.RequireJwt(os.Getenv("JWTSECRET")))
+		usersHandler.GET("/:id", r.ById)
 		usersHandler.Use(middleware.RequireAdminPermission(users, log))
 		usersHandler.GET("", r.Users)
-		usersHandler.GET("/:id", r.ById)
 		usersHandler.PUT("/forceupdateuserprofile", r.ForceUpdateUserProfile)
 		usersHandler.DELETE("", r.DeleteUserById)
 	}

@@ -9,6 +9,7 @@ import (
 
 	"github.com/bogdanshibilov/mindflowbackend/internal/controller/http/v1/middleware"
 	"github.com/bogdanshibilov/mindflowbackend/internal/entity"
+	consultationrepo "github.com/bogdanshibilov/mindflowbackend/internal/repository/consultation"
 	consultationservice "github.com/bogdanshibilov/mindflowbackend/internal/services/consultation"
 	userservice "github.com/bogdanshibilov/mindflowbackend/internal/services/user"
 )
@@ -34,9 +35,11 @@ func New(
 		consultHandler.Use(middleware.RequireJwt(os.Getenv("JWTSECRET")))
 		consultHandler.Use(middleware.ParseClaimsIntoContext())
 		consultHandler.POST("apply", r.ApplyForConsultation)
+		consultHandler.GET("meetasstudent", r.MeetingsAsStudent)
+		consultHandler.GET("meetasexpert", r.MeetingsAsExpert)
+		consultHandler.GET("/:id", r.ById)
 		consultHandler.Use(middleware.RequireAdminPermission(userservice, log))
 		consultHandler.GET("", r.Consultations)
-		consultHandler.GET("/:id", r.ById)
 		consultHandler.POST("/meeting", r.CreateMeeting)
 		consultHandler.POST("/reject/:id", r.RejectApplication)
 	}
@@ -124,4 +127,56 @@ func (r *routes) RejectApplication(ctx *gin.Context) {
 	}
 
 	ctx.Status(http.StatusOK)
+}
+
+func (r *routes) MeetingsAsStudent(ctx *gin.Context) {
+	id := ctx.GetString("uuid")
+
+	consults, err := r.consultations.ByPersonId(
+		ctx,
+		id,
+		consultationrepo.SelectByWhoseUuid(consultationrepo.ByMenteeUuid),
+	)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "bad request"})
+		return
+	}
+
+	var meetings []entity.ConsultationMeeting
+	for _, consult := range consults {
+		meets, err := r.consultations.MeetingsByConsultationId(ctx, consult.Uuid.String())
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"message": "bad request"})
+			return
+		}
+		meetings = append(meetings, meets...)
+	}
+
+	ctx.JSON(http.StatusOK, meetings)
+}
+
+func (r *routes) MeetingsAsExpert(ctx *gin.Context) {
+	id := ctx.GetString("uuid")
+
+	consults, err := r.consultations.ByPersonId(
+		ctx,
+		id,
+		consultationrepo.SelectByWhoseUuid(consultationrepo.ByExpertUuid),
+	)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "bad request"})
+		return
+	}
+
+	var meetings []entity.ConsultationMeeting
+	for _, consult := range consults {
+		meets, err := r.consultations.MeetingsByConsultationId(ctx, consult.Uuid.String())
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"message": "bad request"})
+			return
+		}
+		meetings = append(meetings, meets...)
+	}
+
+	ctx.JSON(http.StatusOK, meetings)
 }

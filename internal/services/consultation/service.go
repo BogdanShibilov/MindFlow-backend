@@ -124,3 +124,14 @@ func (s *Service) CreateMeeting(
 
 	return nil
 }
+
+func (s *Service) MeetingsByConsultationId(ctx context.Context, id string) ([]entity.ConsultationMeeting, error) {
+	const op = "services.consultation.MeetingsByConsultationId"
+
+	uuid, err := uuid.Parse(id)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return s.consultRepo.MeetingsByConsultationUuid(ctx, uuid)
+}
