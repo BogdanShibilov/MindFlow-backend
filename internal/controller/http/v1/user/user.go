@@ -29,6 +29,10 @@ func New(
 	usersHandler := handler.Group("/users")
 	{
 		usersHandler.Use(middleware.RequireJwt(os.Getenv("JWTSECRET")))
+		usersHandler.Use(middleware.ParseClaimsIntoContext())
+		usersHandler.PUT("/myprofile", r.UpdateMyProfile)
+		usersHandler.PUT("/settings", r.UpdateMySettings)
+		usersHandler.GET("/me", r.MyUserInfo)
 		usersHandler.GET("/:id", r.ById)
 		usersHandler.Use(middleware.RequireAdminPermission(users, log))
 		usersHandler.GET("", r.Users)
@@ -58,7 +62,7 @@ func (r *routes) Users(ctx *gin.Context) {
 func (r *routes) ForceUpdateUserProfile(ctx *gin.Context) {
 	const op = "UserRoutes.ForceUpdateUserProfile"
 
-	var req *ForceUpdateUserProfileRequest
+	var req *UpdateUserProfileRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		r.log.Warn("invalid JSON received", op, err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": "invalid JSON"})
@@ -73,6 +77,36 @@ func (r *routes) ForceUpdateUserProfile(ctx *gin.Context) {
 		req.ProfessionalField,
 		req.ExperienceDescription,
 		req.Id,
+	)
+	if err != nil {
+		r.log.Error("failed to update user", op, err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "failed to update user"})
+		return
+	}
+
+	ctx.Status(http.StatusOK)
+}
+
+func (r *routes) UpdateMyProfile(ctx *gin.Context) {
+	const op = "UserRoutes.UpdateMyProfile"
+
+	var req *UpdateUserProfileRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		r.log.Warn("invalid JSON received", op, err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "invalid JSON"})
+		return
+	}
+
+	id := ctx.GetString("uuid")
+
+	err := r.users.UpdateProfile(
+		ctx,
+		req.Name,
+		req.Email,
+		req.Phone,
+		req.ProfessionalField,
+		req.ExperienceDescription,
+		id,
 	)
 	if err != nil {
 		r.log.Error("failed to update user", op, err)
@@ -113,4 +147,37 @@ func (r *routes) ById(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, userDtoFrom(user))
+}
+
+func (r *routes) MyUserInfo(ctx *gin.Context) {
+	id := ctx.GetString("uuid")
+
+	user, err := r.users.ById(ctx, id)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "bad id"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, userDtoFrom(user))
+}
+
+func (r *routes) UpdateMySettings(ctx *gin.Context) {
+	const op = "UserRoutes.UpdateMySettings"
+
+	id := ctx.GetString("uuid")
+
+	var req *UpdateSettingsRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		r.log.Warn("invalid JSON received", op, err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "invalid JSON"})
+		return
+	}
+
+	err := r.users.UpdateSettings(ctx, req.NewEmail, req.NewPhone, req.OldPassword, req.NewPassword, id)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "bad request"})
+		return
+	}
+
+	ctx.Status(http.StatusOK)
 }

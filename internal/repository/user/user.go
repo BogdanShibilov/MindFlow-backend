@@ -118,6 +118,54 @@ func (r *Repo) UpdateCredentials(
 	return nil
 }
 
+func (r *Repo) UpdateSettings(ctx context.Context, newEmail, newPhone, newPassHash string, uuid uuid.UUID) error {
+	const op = "repository.user.UpdateCredentials"
+
+	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+	updateInfoSql, updateInfoArgs, err := psql.Update("user_profiles").
+		SetMap(
+			sq.Eq{
+				"email": newEmail,
+				"phone": newPhone,
+			},
+		).
+		Where("user_uuid IN (?)", uuid).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+	updatePassSql, updatePassArgs, err := psql.Update("users").
+		SetMap(sq.Eq{"pass_hash": newPassHash}).
+		Where("uuid IN (?)", uuid).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	tx, err := r.Db.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+	defer func() {
+		if err != nil {
+			_ = tx.Rollback(ctx)
+		} else {
+			_ = tx.Commit(ctx)
+		}
+	}()
+
+	_, err = tx.Exec(ctx, updateInfoSql, updateInfoArgs...)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+	_, err = tx.Exec(ctx, updatePassSql, updatePassArgs...)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	return nil
+}
+
 func (r *Repo) UpdateProfile(
 	ctx context.Context,
 	profile *entity.UserProfile,

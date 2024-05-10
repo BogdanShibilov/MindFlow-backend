@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/bogdanshibilov/mindflowbackend/internal/entity"
 	userrepo "github.com/bogdanshibilov/mindflowbackend/internal/repository/user"
@@ -175,4 +176,37 @@ func (s *Service) DeleteUserById(ctx context.Context, id string) error {
 	}
 
 	return s.userRepo.DeleteUser(ctx, uuid)
+}
+
+func (s *Service) UpdateSettings(
+	ctx context.Context,
+	newEmail,
+	newPhone,
+	oldPassword,
+	newPassword,
+	id string,
+) error {
+	const op = "services.user.UpdateSettings"
+
+	uuid, err := uuid.Parse(id)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	user, err := s.userRepo.ByUuid(ctx, uuid)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	if err := bcrypt.CompareHashAndPassword(user.PassHash, []byte(oldPassword)); err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	newPassHash, err := bcrypt.
+		GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	return s.userRepo.UpdateSettings(ctx, newEmail, newPhone, string(newPassHash), uuid)
 }

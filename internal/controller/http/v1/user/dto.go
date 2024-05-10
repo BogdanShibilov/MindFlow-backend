@@ -24,8 +24,8 @@ func userDtoFrom(entity *entity.User) *userDto {
 	}
 }
 
-type ForceUpdateUserProfileRequest struct {
-	Id                    string `json:"id" binding:"required"`
+type UpdateUserProfileRequest struct {
+	Id                    string `json:"id"`
 	Name                  string `json:"name" binding:"required"`
 	Email                 string `json:"email" binding:"required"`
 	Phone                 string `json:"phone" binding:"required"`
@@ -35,4 +35,11 @@ type ForceUpdateUserProfileRequest struct {
 
 type DeleteUserByIdRequest struct {
 	Id string `json:"id" binding:"required"`
+}
+
+type UpdateSettingsRequest struct {
+	NewEmail    string `json:"newEmail" binding:"required"`
+	NewPhone    string `json:"newPhone" binding:"required"`
+	NewPassword string `json:"newPassword" binding:"required"`
+	OldPassword string `json:"oldPassword" binding:"required"`
 }
