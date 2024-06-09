@@ -9,15 +9,19 @@ import (
 
 	"github.com/bogdanshibilov/mindflowbackend/internal/entity"
 	consultationrepo "github.com/bogdanshibilov/mindflowbackend/internal/repository/consultation"
+	userrepo "github.com/bogdanshibilov/mindflowbackend/internal/repository/user"
+	"github.com/bogdanshibilov/mindflowbackend/internal/services/mails"
 )
 
 type Service struct {
 	consultRepo *consultationrepo.Repo
+	userRepo    *userrepo.Repo
 }
 
-func New(consultRepo consultationrepo.Repo) *Service {
+func New(consultRepo consultationrepo.Repo, userRepo userrepo.Repo) *Service {
 	return &Service{
 		consultRepo: &consultRepo,
+		userRepo:    &userRepo,
 	}
 }
 
@@ -121,6 +125,22 @@ func (s *Service) CreateMeeting(
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
+
+	consult, err := s.consultRepo.ByUuid(ctx, uuid)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	expert, err := s.userRepo.ByUuid(ctx, consult.ExpertUuid)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+	mentee, err := s.userRepo.ByUuid(ctx, consult.MenteeUuid)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	mails.SendConsultationNotification([]string{expert.Email, mentee.Email}, meeting.Link)
 
 	return nil
 }

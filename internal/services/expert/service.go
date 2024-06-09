@@ -9,6 +9,7 @@ import (
 	"github.com/bogdanshibilov/mindflowbackend/internal/entity"
 	expertrepo "github.com/bogdanshibilov/mindflowbackend/internal/repository/expert"
 	userrepo "github.com/bogdanshibilov/mindflowbackend/internal/repository/user"
+	"github.com/bogdanshibilov/mindflowbackend/internal/services/mails"
 )
 
 type Service struct {
@@ -69,7 +70,24 @@ func (s *Service) ChangeExpertStatus(ctx context.Context, expertId string, statu
 		return fmt.Errorf("%s: %w", op, err)
 	}
 
-	return s.expertRepo.UpdateExpertApplication(ctx, application, uuid)
+	err = s.expertRepo.UpdateExpertApplication(ctx, application, uuid)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	user, err := s.userRepo.ByUuid(ctx, uuid)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	switch status {
+	case entity.Approved:
+		mails.SendExpertConfirmationNotification(user.Email)
+	case entity.Rejected:
+		mails.SendExpertRejectNotification(user.Email)
+	}
+
+	return nil
 }
 
 func (s *Service) ById(ctx context.Context, expertId string) (*entity.Expert, error) {

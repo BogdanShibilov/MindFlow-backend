@@ -46,7 +46,7 @@ func (a *App) Run() {
 	expertsRepo := repository.NewExpert(db)
 	experts := expertservice.New(expertsRepo, userRepo)
 	consultRepo := repository.NewConsultation(db)
-	consultations := consultationservice.New(*consultRepo)
+	consultations := consultationservice.New(*consultRepo, *userRepo)
 
 	handler := gin.New()
 	v1.NewRouter(handler, a.log, auth, experts, users, consultations)

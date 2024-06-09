@@ -3,6 +3,7 @@ module github.com/bogdanshibilov/mindflowbackend
 go 1.22.0
 
 require (
+	github.com/emersion/go-sasl v0.0.0-20200509203442-7bfe0ed36a21
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgerrcode v0.0.0-20240316143900-6e2875d9b438
 	github.com/jackc/pgx/v5 v5.5.5
@@ -47,6 +48,7 @@ require (
 
 require (
 	github.com/Masterminds/squirrel v1.5.4
+	github.com/emersion/go-smtp v0.21.2
 	github.com/gin-contrib/cors v1.7.1
 	github.com/gin-gonic/gin v1.9.1
 	github.com/golang-jwt/jwt/v5 v5.2.1
