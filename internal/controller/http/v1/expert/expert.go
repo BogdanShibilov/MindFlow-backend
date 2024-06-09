@@ -151,6 +151,16 @@ func (r *routes) ExpertsWithFilter(ctx *gin.Context) {
 	}
 	filter["status IN (?)"] = entity.Approved
 
+	field := ctx.Query("field")
+	if field != "" {
+		filter["professional_field IN (?)"] = field
+	}
+
+	name := ctx.Query("name")
+	if name != "" {
+		filter["name ILIKE (?)"] = "%" + name + "%"
+	}
+
 	experts, err := r.experts.ExpertsWithFilter(ctx, filter)
 	if err != nil {
 		r.log.Error("failed to get experts", op, err)
