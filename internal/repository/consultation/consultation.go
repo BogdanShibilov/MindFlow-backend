@@ -307,3 +307,31 @@ func (r *Repo) UpdateApplicationStatus(ctx context.Context, uuid uuid.UUID, stat
 
 	return nil
 }
+
+func (r *Repo) DoesExist(ctx context.Context, menteeUuid, expertUuid uuid.UUID) (bool, error) {
+	const op = "repository.consultation.DoesExist"
+
+	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+	sql, args, err := psql.Select(
+		"Count(*)",
+	).
+		From("consultation").
+		Where("expert_uuid IN (?)", expertUuid).
+		Where("mentee_uuid IN (?)", menteeUuid).
+		ToSql()
+	if err != nil {
+		return false, fmt.Errorf("%s: %w", op, err)
+	}
+
+	var count int
+	err = r.Db.QueryRow(ctx, sql, args...).Scan(&count)
+	if err != nil {
+		return false, fmt.Errorf("%s: %w", op, err)
+	}
+
+	if count > 0 {
+		return true, nil
+	} else {
+		return false, nil
+	}
+}

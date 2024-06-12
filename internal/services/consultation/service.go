@@ -155,3 +155,18 @@ func (s *Service) MeetingsByConsultationId(ctx context.Context, id string) ([]en
 
 	return s.consultRepo.MeetingsByConsultationUuid(ctx, uuid)
 }
+
+func (s *Service) DoesExist(ctx context.Context, menteeId, expertId string) (bool, error) {
+	const op = "services.consultation.DoesExist"
+
+	menteeUuid, err := uuid.Parse(menteeId)
+	if err != nil {
+		return false, fmt.Errorf("%s: %w", op, err)
+	}
+	expertUuid, err := uuid.Parse(expertId)
+	if err != nil {
+		return false, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return s.consultRepo.DoesExist(ctx, menteeUuid, expertUuid)
+}

@@ -12,8 +12,8 @@ tasks:
 
   push-to-gar:
     cmds:
-      - docker tag mindflow-b:latest europe-north1-docker.pkg.dev/mindflow-416115/mindflow-b/mindflow-b:latest
-      - docker push europe-north1-docker.pkg.dev/mindflow-416115/mindflow-b/mindflow-b:latest
+      - docker tag mindflow-b:latest europe-north1-docker.pkg.dev/skillful-flow-425917-u5/mindflow-b/mindflow-b:latest
+      - docker push europe-north1-docker.pkg.dev/skillful-flow-425917-u5/mindflow-b/mindflow-b:latest
 
   migrate-up:
     cmd: go run ./cmd/migrator/main.go --conn-url=postgres://root:root@localhost:5432/mindflow --migrations-path="./migrations" --way=up

@@ -35,6 +35,7 @@ func New(
 		consultHandler.Use(middleware.RequireJwt(os.Getenv("JWTSECRET")))
 		consultHandler.Use(middleware.ParseClaimsIntoContext())
 		consultHandler.POST("apply", r.ApplyForConsultation)
+		consultHandler.GET("alreadyapplied/:expertid", r.AlreadyApplied)
 		consultHandler.GET("meetasstudent", r.MeetingsAsStudent)
 		consultHandler.GET("meetasexpert", r.MeetingsAsExpert)
 		consultHandler.GET("/:id", r.ById)
@@ -179,4 +180,20 @@ func (r *routes) MeetingsAsExpert(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, meetings)
+}
+
+func (r *routes) AlreadyApplied(ctx *gin.Context) {
+	const op = "consultationroutes.AlreadyApplied"
+
+	menteeId := ctx.GetString("uuid")
+	expertId := ctx.Param("expertid")
+
+	alreadyApplied, err := r.consultations.DoesExist(ctx, menteeId, expertId)
+	if err != nil {
+		r.log.Error("failed to check existance", op, err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "failed to check existance"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"alreadyApplied": alreadyApplied})
 }
